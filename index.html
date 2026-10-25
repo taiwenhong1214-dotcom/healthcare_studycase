@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Change Healthcare • Security Lessons</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f5f7f4;
+        color: #263f39;
+        font:
+          16px/1.6 Arial,
+          sans-serif;
+      }
+      main {
+        max-width: 980px;
+        margin: auto;
+        padding: 48px 24px;
+      }
+      header {
+        text-align: center;
+        max-width: 660px;
+        margin: 0 auto 35px;
+      }
+      .tag {
+        display: inline-block;
+        background: #dfead9;
+        color: #34573a;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 12px;
+      }
+      h1 {
+        font-size: clamp(30px, 5vw, 44px);
+        line-height: 1.15;
+        letter-spacing: -1.5px;
+        margin: 18px 0 12px;
+      }
+      header p {
+        color: #61716a;
+      }
+      h2 {
+        font-size: 19px;
+        line-height: 1.3;
+        margin: 13px 0;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .card {
+        background: white;
+        border: 1px solid #dfe5dd;
+        border-radius: 14px;
+        padding: 23px;
+      }
+      .number {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        background: #e5efdf;
+        border-radius: 11px;
+        font-weight: bold;
+      }
+      .card p {
+        font-size: 14px;
+        margin: 12px 0;
+      }
+      .solution {
+        padding-top: 12px;
+        border-top: 1px solid #e6ebe3;
+      }
+      .note {
+        font-size: 12px;
+        color: #65736c;
+        margin: 16px 2px 28px;
+      }
+      .question {
+        background: #e6eedf;
+        border-radius: 14px;
+        padding: 23px;
+        text-align: center;
+      }
+      .question h2 {
+        margin-top: 0;
+      }
+      details {
+        margin: 15px auto 0;
+        max-width: 660px;
+      }
+      summary {
+        cursor: pointer;
+        display: list-item;
+        list-style-position: inside;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      details p {
+        font-size: 14px;
+      }
+      summary:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #536f42;
+        outline-offset: 4px;
+      }
+      footer {
+        text-align: center;
+        font-size: 12px;
+        color: #68766d;
+        margin-top: 25px;
+      }
+      a {
+        color: #3d624b;
+        text-underline-offset: 3px;
+      }
+      footer p {
+        margin: 8px 0;
+      }
+      @media (max-width: 700px) {
+        main {
+          padding: 30px 18px;
+        }
+        .cards {
+          grid-template-columns: 1fr;
+        }
+        .card {
+          padding: 20px;
+        }
+        header {
+          margin-bottom: 25px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="tag">System Security and Threats</span>
+        <h1>Change Healthcare<br />Ransomware Attack (2024)</h1>
+        <p>
+          Attackers used stolen login details to enter a system without MFA. The
+          attack disrupted healthcare claims and payments.
+        </p>
+      </header>
+      <div class="cards">
+        <article class="card">
+          <span class="number">01</span>
+          <h2>Missing MFA</h2>
+          <p>
+            <strong>Weakness:</strong> The affected remote-access portal only
+            required login details.
+          </p>
+          <p>
+            <strong>Risk:</strong> A stolen password could let an attacker
+            enter.
+          </p>
+          <p class="solution">
+            <strong>Solution:</strong> Require MFA, such as a password plus a
+            security key.
+          </p>
+        </article>
+        <article class="card">
+          <span class="number">02</span>
+          <h2>Outdated Systems</h2>
+          <p>
+            <strong>Weakness:</strong> Old, unsupported software may stop
+            receiving security updates.
+          </p>
+          <p>
+            <strong>Risk:</strong> Attackers could exploit known security flaws.
+          </p>
+          <p class="solution">
+            <strong>Solution:</strong> Test and install updates. Replace
+            unsupported systems.
+          </p>
+        </article>
+        <article class="card">
+          <span class="number">03</span>
+          <h2>Poor Network Separation</h2>
+          <p>
+            <strong>Weakness:</strong> Unnecessary connections can let attackers
+            reach other systems.
+          </p>
+          <p>
+            <strong>Risk:</strong> One infected device could lead to a wider
+            outage.
+          </p>
+          <p class="solution">
+            <strong>Solution:</strong> Separate important systems and allow only
+            necessary access.
+          </p>
+        </article>
+      </div>
+      <p> </p>
+      <section class="question">
+        <h2>Quick question 💭</h2>
+        <p>
+          A hospital’s old server still works. Should it skip security updates?
+        </p>
+        <details>
+          <summary>Show answer</summary>
+          <p>
+            <strong>No.</strong> Working does not mean secure. Test updates
+            using sample claims, check the results, and prepare a backup and
+            rollback plan before updating.
+          </p>
+        </details>
+      </section>
+      <footer>
+        <p>
+          Learn more:
+          <a
+            href="https://www.cisa.gov/stopransomware/ransomware-guide"
+            target="_blank"
+            rel="noopener"
+            >CISA security guide</a
+          >
+          ·
+          <a
+            href="https://csrc.nist.gov/pubs/sp/1800/31/final"
+            target="_blank"
+            rel="noopener"
+            >NIST patching guide</a
+          >
+        </p>
+        <p>System Fundamental · Extra learning content</p>
+      </footer>
+    </main>
+  </body>
+</html>
