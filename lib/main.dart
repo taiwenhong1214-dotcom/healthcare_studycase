@@ -595,7 +595,7 @@ class ChatSession extends ChangeNotifier {
       text:
           'Hi! I’m your study assistant for the Change Healthcare case study. '
           'Ask about the attack or the three lessons — you can request a '
-          'length, like “in 50 words.”',
+          'length, like “in 150 words.”',
       isUser: false,
       isIntro: true,
     ),
@@ -717,7 +717,7 @@ class StudyAssistantSheet extends StatefulWidget {
 
 class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
   static const _suggestions = [
-    'Summarize the attack in 50 words',
+    'Summarize the attack in 150 words',
     'Why does MFA matter?',
     'How could this be prevented?',
   ];

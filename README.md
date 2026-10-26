@@ -1,4 +1,4 @@
-﻿# Healthcare Case Study: Change Healthcare Ransomware Attack (2024)
+# Healthcare Case Study: Change Healthcare Ransomware Attack (2024)
 
 An interactive, responsive case study focusing on the cybersecurity lessons learned from the **2024 Change Healthcare Ransomware Attack**. Designed as educational material for System Security & Fundamentals.
 
@@ -49,7 +49,7 @@ This study examines key architectural vulnerabilities, security risks, and pract
 The floating bubble above the bottom navigation opens a chat panel. Closing the
 panel keeps the conversation for the current page session; refreshing the page
 starts a new chat. The assistant answers only questions about this case study and
-follows a requested answer length (for example, “in 50 words” or “one sentence”).
+follows a requested answer length (for example, “in 150 words” or “one sentence”).
 Requests go to `/api/chat`, which tries the providers in this order:
 
 1. **OpenCode Zen** — `OPENCODE_API_KEY`

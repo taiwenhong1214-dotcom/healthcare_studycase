@@ -42,7 +42,7 @@ Output Format & Layout (MUST be clean, neat, and well-aligned / 整齐规整):
   - Format each point with a clean title and colon in plain text, e.g.:
     • Point Title: Brief, focused explanation.
   - Keep each bullet point to 1-2 concise sentences.
-• For simple facts: Answer directly in 1-2 sentences without padding.
+• Length guidance: Follow any requested length (e.g., "in 150 words"). If no length is specified, provide an informative explanation of around 100-150 words with clear bullet points. For simple facts, 1-2 direct sentences are enough.
 • Do not output walls of unbroken text. Separate distinct thoughts with a single blank line.
 • Do not use markdown headers (###), raw HTML, or tables.
 • No conversational fluff (avoid "Sure!", "Here is...", or "Hope this helps!").
@@ -111,7 +111,7 @@ async function callModelStreaming({ url, model, messages, headers, timeoutMs, on
       model,
       messages,
       temperature: 0.5,
-      max_tokens: 300,
+      max_tokens: 500,
       stream: true,
     }),
     signal: AbortSignal.timeout(timeoutMs),
@@ -173,7 +173,7 @@ async function callModelJSON({ url, model, messages, headers, timeoutMs }) {
       model,
       messages,
       temperature: 0.5,
-      max_tokens: 300,
+      max_tokens: 500,
       stream: false,
     }),
     signal: AbortSignal.timeout(timeoutMs),
