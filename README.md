@@ -58,9 +58,11 @@ Both keys are configured in the Vercel project settings. Never put either key in
 OpenCode uses the paid `deepseek-v4.1-flash` model through
 `https://opencode.ai/inference/openai/v1/chat/completions`. Free-tier
 OpenCode models are restricted to the OpenCode client, so they cannot be
-called from this serverless function. If OpenCode is unavailable, OpenRouter
-tries the same model list as the earlier project: `openai/gpt-oss-120b:free`,
-`anthropic/claude-opus-4.8:fast`, then `openai/gpt-5.4-nano`.
+called from this serverless function. If OpenCode is unavailable (for
+example, the Console account has no credits), OpenRouter tries the same model
+list as the earlier project: `openai/gpt-oss-120b:free`,
+`anthropic/claude-opus-4.8:fast`, then `openai/gpt-5.4-nano`. Add credits in
+the OpenCode Console to activate the OpenCode path.
 
 For local web development, point the app at a running deployment of the API:
 
