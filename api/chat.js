@@ -8,7 +8,10 @@
 // first with its free general-purpose model, then OpenRouter takes over.
 
 const OPENCODE_URL = 'https://opencode.ai/zen/v1/chat/completions';
-const OPENCODE_MODEL = 'deepseek-v4.1-flash-free';
+const OPENCODE_MODELS = [
+  'deepseek-v4.1-flash-free',
+  'nemotron-3.5-lightning-free',
+];
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODELS = [
@@ -52,7 +55,7 @@ function sanitizeMessages(rawMessages) {
     .filter((message) => message.content.length > 0);
 }
 
-async function callOpenCode(messages) {
+async function callOpenCode(model, messages) {
   const apiKey = process.env.OPENCODE_API_KEY;
   if (!apiKey) {
     throw new Error('OPENCODE_API_KEY is not configured');
@@ -65,23 +68,23 @@ async function callOpenCode(messages) {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: OPENCODE_MODEL,
+      model,
       messages,
       temperature: 0.5,
       stream: false,
     }),
-    signal: AbortSignal.timeout(22000),
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!response.ok) {
     const details = (await response.text()).slice(0, 300);
-    throw new Error(`OpenCode returned ${response.status}: ${details}`);
+    throw new Error(`OpenCode ${model} returned ${response.status}: ${details}`);
   }
 
   const data = await response.json();
   const reply = data?.choices?.[0]?.message?.content;
   if (typeof reply !== 'string' || reply.trim().length === 0) {
-    throw new Error('OpenCode returned an empty reply');
+    throw new Error(`OpenCode ${model} returned an empty reply`);
   }
   return reply.trim();
 }
@@ -173,12 +176,19 @@ module.exports = async function handler(req, res) {
   const failures = [];
 
   try {
-    const reply = await callOpenCode(messages);
-    return res.status(200).json({
-      reply,
-      provider: 'opencode',
-      model: OPENCODE_MODEL,
-    });
+    for (const model of OPENCODE_MODELS) {
+      try {
+        const reply = await callOpenCode(model, messages);
+        return res.status(200).json({
+          reply,
+          provider: 'opencode',
+          model,
+        });
+      } catch (error) {
+        console.warn(`[chat] OpenCode ${model} failed:`, error.message);
+        failures.push({ provider: 'opencode', model, error: error.message });
+      }
+    }
   } catch (error) {
     console.warn('[chat] OpenCode failed:', error.message);
     failures.push({ provider: 'opencode', error: error.message });

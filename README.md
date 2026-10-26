@@ -55,7 +55,8 @@ The floating bubble above the bottom navigation opens a chat panel. Requests go 
 Both keys are configured in the Vercel project settings. Never put either key in
 `lib/main.dart` or any other client-side file.
 
-OpenCode uses `deepseek-v4.1-flash-free`. If it is unavailable, OpenRouter tries
+OpenCode tries `deepseek-v4.1-flash-free`, then
+`nemotron-3.5-lightning-free`. If both are unavailable, OpenRouter tries
 the same model list as the earlier project: `openai/gpt-oss-120b:free`,
 `anthropic/claude-opus-4.8:fast`, then `openai/gpt-5.4-nano`.
 
