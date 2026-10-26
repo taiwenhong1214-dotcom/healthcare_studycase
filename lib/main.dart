@@ -50,9 +50,9 @@ const lessons = [
     navLabel: 'MFA',
     sectionLabel: 'First vulnerability',
     icon: Icons.smartphone,
-    weakness: 'The affected remote-access portal only required login details.',
-    risk: 'A stolen password could let an attacker enter.',
-    solution: 'Require MFA, such as a password plus a security key.',
+    weakness: '',
+    risk: '',
+    solution: '',
   ),
   Lesson(
     number: '02',
@@ -70,9 +70,9 @@ const lessons = [
     navLabel: 'Network',
     sectionLabel: 'Third vulnerability',
     icon: Icons.hub,
-    weakness: 'Unnecessary connections can let attackers reach other systems.',
-    risk: 'One infected device could lead to a wider outage.',
-    solution: 'Separate important systems and allow only necessary access.',
+    weakness: '',
+    risk: '',
+    solution: '',
   ),
 ];
 
@@ -690,11 +690,7 @@ class ChatSession extends ChangeNotifier {
     const override = String.fromEnvironment('AI_CHAT_ENDPOINT');
     if (override.isNotEmpty) return Uri.parse(override);
     if (kIsWeb) return Uri.base.resolve('/api/chat');
-    throw Exception(
-      'Set AI_CHAT_ENDPOINT to the deployed /api/chat URL when running on '
-      'mobile, for example: '
-      '--dart-define=AI_CHAT_ENDPOINT=https://healthcare-studycase.space/api/chat',
-    );
+    return Uri.parse('https://healthcare-studycase.space/api/chat');
   }
 }
 
