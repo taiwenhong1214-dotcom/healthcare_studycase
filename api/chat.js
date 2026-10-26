@@ -214,9 +214,9 @@ function openRouterHeaders() {
 }
 
 // ── IP Rate Limiter ────────────────────────────────────────────────────
-// Policy: Max 5 requests / minute per IP + minimum 3s cooldown between requests.
+// Policy: Max 10 requests / minute per IP + minimum 3s cooldown between requests.
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 60 seconds
-const MAX_REQUESTS_PER_WINDOW = 5;
+const MAX_REQUESTS_PER_WINDOW = 10;
 const COOLDOWN_MS = 3 * 1000; // 3 seconds
 
 const ipRateMap = new Map();
@@ -243,14 +243,14 @@ function checkRateLimit(ip) {
     };
   }
 
-  // 2. Sliding window check: max 5 requests per 60 seconds
+  // 2. Sliding window check: max 10 requests per 60 seconds
   const recent = record.timestamps.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
   if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
     const waitSeconds = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - recent[0])) / 1000);
     return {
       allowed: false,
       retryAfter: waitSeconds,
-      message: `Rate limit reached (max 5 questions/minute). Please wait ${waitSeconds}s before asking again.`,
+      message: `Rate limit reached (max 10 questions/minute). Please wait ${waitSeconds}s before asking again.`,
     };
   }
 
