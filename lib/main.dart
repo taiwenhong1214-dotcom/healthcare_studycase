@@ -594,8 +594,7 @@ class ChatSession extends ChangeNotifier {
     ChatMessage(
       text:
           'Hi! I’m your study assistant for the Change Healthcare case study. '
-          'Ask about the attack or the three lessons — you can request a '
-          'length, like “in 150 words.”',
+          'Ask about the attack or the three lessons.',
       isUser: false,
       isIntro: true,
     ),
