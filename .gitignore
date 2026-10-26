@@ -1,4 +1,52 @@
-﻿.DS_Store
-Thumbs.db
-*.tmp
+﻿# Miscellaneous
+*.class
 *.log
+*.pyc
+*.swp
+*.tmp
+.DS_Store
+Thumbs.db
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Android local files
+/android/local.properties
+/android/.gradle/
+
+# Vercel project link (created by `vercel link`)
+.vercel/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+.vercel
+.env*

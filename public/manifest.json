@@ -1,0 +1,11 @@
+{
+  "name": "Change Healthcare • Security Lessons",
+  "short_name": "Change Healthcare",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f7f4",
+  "theme_color": "#f5f7f4",
+  "description": "Interactive case study of the 2024 Change Healthcare ransomware attack, its security weaknesses, risks, and safeguards.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

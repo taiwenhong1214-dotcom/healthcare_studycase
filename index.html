@@ -22,9 +22,19 @@
         padding: 48px 24px;
       }
       header {
-        text-align: center;
-        max-width: 660px;
-        margin: 0 auto 35px;
+        max-width: 880px;
+        margin: 0 auto 38px;
+      }
+      .topic-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        text-align: left;
+      }
+      .topic-content {
+        flex: 1;
+        max-width: 580px;
       }
       .tag {
         display: inline-block;
@@ -35,13 +45,25 @@
         font-size: 12px;
       }
       h1 {
-        font-size: clamp(30px, 5vw, 44px);
+        font-size: clamp(28px, 4.2vw, 40px);
         line-height: 1.15;
-        letter-spacing: -1.5px;
-        margin: 18px 0 12px;
+        letter-spacing: -1.2px;
+        margin: 12px 0 10px;
       }
-      header p {
+      .topic-content p {
         color: #61716a;
+        font-size: 15px;
+        line-height: 1.55;
+        margin: 0;
+      }
+      .topic-gif {
+        width: 185px;
+        height: 185px;
+        object-fit: cover;
+        border-radius: 16px;
+        border: 1px solid #dfe5dd;
+        box-shadow: 0 6px 18px rgba(38, 63, 57, 0.1);
+        flex-shrink: 0;
       }
       h2 {
         font-size: 19px;
@@ -122,9 +144,18 @@
       footer p {
         margin: 8px 0;
       }
-      @media (max-width: 700px) {
+      @media (max-width: 720px) {
         main {
           padding: 30px 18px;
+        }
+        .topic-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 20px;
+        }
+        .topic-gif {
+          width: 140px;
+          height: 140px;
         }
         .cards {
           grid-template-columns: 1fr;
@@ -141,12 +172,21 @@
   <body>
     <main>
       <header>
-        <span class="tag">System Security and Threats</span>
-        <h1>Change Healthcare<br />Ransomware Attack (2024)</h1>
-        <p>
-          Attackers used stolen login details to enter a system without MFA. The
-          attack disrupted healthcare claims and payments.
-        </p>
+        <div class="topic-header">
+          <div class="topic-content">
+            <span class="tag">System Security and Threats</span>
+            <h1>Change Healthcare<br />Ransomware Attack (2024)</h1>
+            <p>
+              Attackers used stolen login details to enter a system without MFA. The
+              attack disrupted healthcare claims and payments.
+            </p>
+          </div>
+          <img
+            src="laptop-hacking.gif"
+            alt="Laptop hacking animation"
+            class="topic-gif"
+          />
+        </div>
       </header>
       <div class="cards">
         <article class="card">
