@@ -1025,6 +1025,13 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
+    final baseStyle = TextStyle(
+      fontFamily: 'Arimo',
+      fontSize: 13.5,
+      height: 1.55,
+      color: isUser ? Colors.white : textColor,
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1046,7 +1053,7 @@ class _MessageBubble extends StatelessWidget {
             ),
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               decoration: BoxDecoration(
                 color: isUser ? textColor : Colors.white,
                 border: isUser ? null : Border.all(color: borderColor),
@@ -1056,21 +1063,64 @@ class _MessageBubble extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 16 : 5),
                   bottomRight: Radius.circular(isUser ? 5 : 16),
                 ),
+                boxShadow: isUser
+                    ? null
+                    : const [
+                        BoxShadow(
+                          color: Color.fromRGBO(38, 63, 57, 0.04),
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
               ),
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  fontFamily: 'Arimo',
-                  fontSize: 13.5,
-                  height: 1.5,
-                  color: isUser ? Colors.white : textColor,
-                ),
-              ),
+              child: _buildFormattedContent(message.text, baseStyle, isUser),
             ),
           ),
           if (isUser) const SizedBox(width: 4),
         ],
       ),
+    );
+  }
+
+  Widget _buildFormattedContent(String rawText, TextStyle baseStyle, bool isUser) {
+    // Normalize bullets and excess blank lines for neat alignment
+    final text = rawText
+        .replaceAll(RegExp(r'^\s*[-*]\s+', multiLine: true), '• ')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+
+    if (isUser || !text.contains('**')) {
+      return Text(text, style: baseStyle);
+    }
+
+    final spans = <InlineSpan>[];
+    final regex = RegExp(r'\*\*(.*?)\*\*');
+    int lastEnd = 0;
+
+    for (final match in regex.allMatches(text)) {
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+          style: baseStyle,
+        ));
+      }
+      spans.add(TextSpan(
+        text: match.group(1),
+        style: baseStyle.copyWith(fontWeight: FontWeight.bold),
+      ));
+      lastEnd = match.end;
+    }
+
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+        style: baseStyle,
+      ));
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+      style: baseStyle,
     );
   }
 }

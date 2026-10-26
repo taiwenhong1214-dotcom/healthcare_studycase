@@ -1,53 +1,66 @@
 // Study assistant backend for the Change Healthcare case study.
 //
-// Provider order:
+// Performance strategy:
+//   - Race all providers/models in parallel — first successful reply wins.
+//   - Compact system prompt to reduce input tokens and generation latency.
+//   - Cap output with max_tokens to prevent rambling on free-tier models.
+//   - Stream the response so the user sees tokens as they arrive.
+//
+// Provider order (raced in parallel):
 //   1. OpenCode Zen (OPENCODE_API_KEY)
 //   2. OpenRouter  (OPENROUTER_API_KEY)
-//
-// OpenCode is tried first, then OpenRouter takes over. OpenCode's free chat
-// models are normally limited to the OpenCode client, so the serverless
-// function may receive a 429 and fall back to OpenRouter.
 
 const OPENCODE_URL = 'https://opencode.ai/inference/openai/v1/chat/completions';
-const OPENCODE_MODELS = ['deepseek-v4.1-flash-free', 'glm-5.3-flash-free'];
+const OPENCODE_MODELS = ['deepseek-v4.1-flash-free', 'beam-free'];
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODELS = [
-  'nvidia/nemotron-3.5-lightning:free',
   'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'thinkingmachines/inkling:free'
+
 ];
 
-const SYSTEM_PROMPT = `You are the study assistant for an educational case study about the 2024 Change Healthcare ransomware attack.
+// ── Compact system prompt ──────────────────────────────────────────────
+// Strictly enforces neat, structured, and aligned responses (整齐规整).
+const SYSTEM_PROMPT = `You are the study assistant for the 2024 Change Healthcare ransomware attack case study.
 
-Scope:
-- Answer only questions about this case study: the attack, its impact, the three vulnerabilities, and the defenses covered.
-- The three lessons are:
-  1. Missing MFA: the remote-access portal only required login details.
-  2. Outdated Systems: old, unsupported software may stop receiving security updates.
-  3. Poor Network Separation: unnecessary connections let attackers reach other systems.
-- You may explain a general security term only when it directly helps the student understand a lesson or fact in this case study.
-- If a question is unrelated, briefly say you can only help with this case study, then invite a case-study question. Do not answer the unrelated question.
+Scope & facts (answer ONLY about this case):
+• Change Healthcare (UnitedHealth Group subsidiary) was hit by ransomware in early 2024, disrupting nationwide US healthcare claims and payments.
+• Three core vulnerabilities & lessons:
+  1. Missing MFA: The remote-access portal only required credentials with no multi-factor authentication.
+  2. Outdated Systems: Legacy server systems lacked critical security updates and patches.
+  3. Poor Network Separation: Flat network design allowed attackers to spread laterally across systems.
+• Defenses: Phishing-resistant MFA, continuous patching of supported software, and strict network segmentation with least-privilege access.
+• If off-topic: Politely state in 1 sentence that you can only assist with the Change Healthcare case study.
 
-Case facts:
-- Change Healthcare is a subsidiary of UnitedHealth Group.
-- In early 2024, attackers used stolen login details to enter a remote-access portal that did not require MFA.
-- The attack disrupted healthcare claims and payments across the United States.
-- The main defensive lessons are phishing-resistant MFA, regular patching of supported systems, and network segmentation with least-privilege access.
+Output Format & Layout (MUST be clean, neat, and well-aligned / 整齐规整):
+• Keep answers structured, tidy, and easy to skim.
+• For explanations or multi-point answers, structure cleanly:
+  - Start with a direct 1-sentence summary.
+  - Use clean bullet points (•) or numbered lists (1., 2., 3.).
+  - Format each point with a clear bold label, e.g.:
+    • **Point Title**: Brief, focused explanation.
+  - Keep each bullet point to 1-2 concise sentences.
+• For simple facts: Answer directly in 1-2 sentences without padding.
+• Do not output walls of unbroken text. Separate distinct thoughts with a single blank line.
+• Do not use markdown headers (###), raw HTML, or tables.
+• No conversational fluff (avoid "Sure!", "Here is...", or "Hope this helps!").
+• Always match the student's language (e.g., reply in clean, well-structured Chinese if asked in Chinese).`;
 
-Length:
-- Follow any length the student asks for: a word count, a sentence count, a number of bullet points, "briefly", or "in detail". Stay at or under a stated word limit.
-- When a word limit is given, count your draft and revise it before replying so it stays at or under the limit.
-- If the student gives no length, match the question: 1-3 sentences for a simple fact, up to 120 words for an explanation. Do not pad.
-- If a requested limit is very short, give the direct answer first and drop optional detail.
-- If the request cannot be answered well within the limit, say so in one short sentence and give the best answer that fits.
+// ── Helpers ─────────────────────────────────────────────────────────────
 
-Style and safety:
-- Reply in the same language the student uses.
-- Be clear, friendly, and plain. Explain rather than just listing facts. Use a short example when it helps.
-- Never invent facts. If the case study does not cover something, say so.
-- Never claim to have live information about the attack, and never ask for personal or sensitive information.
-- Do not use markdown tables. Short paragraphs and simple bullet points are fine.
-- You are a study helper, not a doctor or a source of medical advice.`;
+function formatCleanReply(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/\r\n/g, '\n')
+    // Remove markdown headers (### Header -> Header)
+    .replace(/^#{1,6}\s+/gm, '')
+    // Normalize bullets (* or - at line start -> •)
+    .replace(/^[\t ]*[-*]\s+/gm, '• ')
+    // Collapse 3+ consecutive newlines to 2
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 function sanitizeMessages(rawMessages) {
   if (!Array.isArray(rawMessages)) return [];
@@ -62,84 +75,143 @@ function sanitizeMessages(rawMessages) {
     .filter((message) => message.content.length > 0);
 }
 
-async function callOpenCode(model, messages) {
-  const apiKey = process.env.OPENCODE_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENCODE_API_KEY is not configured');
-  }
+// ── Streaming helpers ──────────────────────────────────────────────────
 
-  const response = await fetch(OPENCODE_URL, {
+/** Parse one SSE chunk and return the content delta, or null. */
+function extractDelta(line) {
+  if (!line.startsWith('data: ')) return null;
+  const payload = line.slice(6).trim();
+  if (payload === '[DONE]') return null;
+  try {
+    const parsed = JSON.parse(payload);
+    return parsed?.choices?.[0]?.delta?.content ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Call a single model with streaming enabled. Returns a Promise that
+ * resolves with the full reply text. While streaming, each delta token
+ * is forwarded to `onDelta(token)`.
+ */
+async function callModelStreaming({ url, model, messages, headers, timeoutMs, onDelta }) {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'User-Agent': 'ChangeHealthcareStudyAssistant/1.0',
+      ...headers,
     },
     body: JSON.stringify({
       model,
       messages,
       temperature: 0.5,
-      stream: false,
+      max_tokens: 300,
+      stream: true,
     }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
     const details = (await response.text()).slice(0, 300);
-    throw new Error(`OpenCode ${model} returned ${response.status}: ${details}`);
+    throw new Error(`${model} returned ${response.status}: ${details}`);
   }
 
-  const data = await response.json();
-  const reply = data?.choices?.[0]?.message?.content;
-  if (typeof reply !== 'string' || reply.trim().length === 0) {
-    throw new Error(`OpenCode ${model} returned an empty reply`);
+  // Read the SSE stream.
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullReply = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    // Keep the last (possibly incomplete) line in the buffer.
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const delta = extractDelta(line);
+      if (delta) {
+        fullReply += delta;
+        onDelta(delta);
+      }
+    }
   }
-  return reply.trim();
+  // Process any remaining data in the buffer.
+  if (buffer.trim()) {
+    const delta = extractDelta(buffer);
+    if (delta) {
+      fullReply += delta;
+      onDelta(delta);
+    }
+  }
+
+  if (fullReply.trim().length === 0) {
+    throw new Error(`${model} returned an empty reply`);
+  }
+  return fullReply.trim();
 }
 
-async function callOpenRouter(messages) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENROUTER_API_KEY is not configured');
-  }
+// ── Non-streaming fallback (used when streaming is not requested) ──────
 
-  const response = await fetch(OPENROUTER_URL, {
+async function callModelJSON({ url, model, messages, headers, timeoutMs }) {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://healthcare-studycase.space',
-      'X-Title': 'Change Healthcare Study Assistant',
+      ...headers,
     },
     body: JSON.stringify({
-      models: OPENROUTER_MODELS,
+      model,
       messages,
       temperature: 0.5,
+      max_tokens: 300,
       stream: false,
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
     const details = (await response.text()).slice(0, 300);
-    throw new Error(`OpenRouter returned ${response.status}: ${details}`);
+    throw new Error(`${model} returned ${response.status}: ${details}`);
   }
 
   const data = await response.json();
   const reply = data?.choices?.[0]?.message?.content;
   if (typeof reply !== 'string' || reply.trim().length === 0) {
-    throw new Error('OpenRouter returned an empty reply');
+    throw new Error(`${model} returned an empty reply`);
   }
+  return { reply: reply.trim(), model: data?.model || model };
+}
+
+// ── Build per-provider headers ─────────────────────────────────────────
+
+function openCodeHeaders() {
+  const apiKey = process.env.OPENCODE_API_KEY;
+  if (!apiKey) throw new Error('OPENCODE_API_KEY is not configured');
   return {
-    reply: reply.trim(),
-    model: data?.model || OPENROUTER_MODELS[0],
+    Authorization: `Bearer ${apiKey}`,
+    'User-Agent': 'ChangeHealthcareStudyAssistant/1.0',
   };
 }
 
+function openRouterHeaders() {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured');
+  return {
+    Authorization: `Bearer ${apiKey}`,
+    'HTTP-Referer': 'https://healthcare-studycase.space',
+    'X-Title': 'Change Healthcare Study Assistant',
+  };
+}
+
+// ── Main handler ───────────────────────────────────────────────────────
+
 module.exports = async function handler(req, res) {
-  // The app calls the function same-origin. Allow the deployed domain,
-  // Vercel previews, and local Flutter development explicitly instead of
-  // opening the endpoint to every website.
+  // CORS — allow deployed domain, Vercel previews, and local dev.
   const origin = req.headers.origin || '';
   const allowedOrigin =
     origin === 'https://healthcare-studycase.space' ||
@@ -158,7 +230,6 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -181,43 +252,115 @@ module.exports = async function handler(req, res) {
   }
 
   const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history];
-  const failures = [];
 
-  try {
-    for (const model of OPENCODE_MODELS) {
-      try {
-        const reply = await callOpenCode(model, messages);
-        return res.status(200).json({
-          reply,
-          provider: 'opencode',
-          model,
-        });
-      } catch (error) {
-        console.warn(`[chat] OpenCode ${model} failed:`, error.message);
-        failures.push({ provider: 'opencode', model, error: error.message });
+  // ── Streaming path ─────────────────────────────────────────────────
+  // If the client sends `Accept: text/event-stream` or `?stream=1`,
+  // stream SSE tokens directly. Otherwise fall back to the JSON path
+  // so the existing Flutter client keeps working without changes.
+  const wantsStream =
+    req.headers.accept === 'text/event-stream' ||
+    (req.query && req.query.stream === '1');
+
+  if (wantsStream) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Build all model attempts.
+    const attempts = [];
+    try {
+      const ocHeaders = openCodeHeaders();
+      for (const m of OPENCODE_MODELS) {
+        attempts.push({ url: OPENCODE_URL, model: m, headers: ocHeaders, timeoutMs: 10000 });
       }
+    } catch { /* key not set — skip */ }
+    try {
+      const orHeaders = openRouterHeaders();
+      for (const m of OPENROUTER_MODELS) {
+        attempts.push({ url: OPENROUTER_URL, model: m, headers: orHeaders, timeoutMs: 12000 });
+      }
+    } catch { /* key not set — skip */ }
+
+    if (attempts.length === 0) {
+      res.write('data: {"error":"No API keys configured"}\n\n');
+      return res.end();
     }
-  } catch (error) {
-    console.warn('[chat] OpenCode failed:', error.message);
-    failures.push({ provider: 'opencode', error: error.message });
+
+    // Race all models in parallel. The first one to start producing
+    // tokens wins; the rest are left to settle (and ignored).
+    let settled = false;
+    const racePromises = attempts.map(
+      (a) =>
+        callModelStreaming({
+          ...a,
+          messages,
+          onDelta: (token) => {
+            if (!settled) {
+              settled = true;
+              // Cancel interest in other promises (they'll still run
+              // but their deltas will be ignored below).
+            }
+            // Only forward deltas from the winning model.
+            if (settled) {
+              res.write(`data: ${JSON.stringify({ token })}\n\n`);
+            }
+          },
+        }).then((fullReply) => ({ ok: true, reply: fullReply, model: a.model })),
+    );
+
+    // We need the *first to succeed*, not Promise.race (which resolves
+    // on the first to settle, including rejections). Use Promise.any.
+    try {
+      const winner = await Promise.any(racePromises);
+      res.write(`data: ${JSON.stringify({ done: true, model: winner.model })}\n\n`);
+    } catch (aggregateError) {
+      res.write(`data: ${JSON.stringify({ error: 'All models failed' })}\n\n`);
+    }
+    return res.end();
+  }
+
+  // ── JSON path (existing Flutter client) ────────────────────────────
+  // Race all providers/models in parallel — first success wins.
+
+  const attempts = [];
+  try {
+    const ocHeaders = openCodeHeaders();
+    for (const m of OPENCODE_MODELS) {
+      attempts.push(
+        callModelJSON({ url: OPENCODE_URL, model: m, messages, headers: ocHeaders, timeoutMs: 10000 })
+          .then((r) => ({ ...r, provider: 'opencode' })),
+      );
+    }
+  } catch { /* key not set — skip */ }
+  try {
+    const orHeaders = openRouterHeaders();
+    for (const m of OPENROUTER_MODELS) {
+      attempts.push(
+        callModelJSON({ url: OPENROUTER_URL, model: m, messages, headers: orHeaders, timeoutMs: 12000 })
+          .then((r) => ({ ...r, provider: 'openrouter' })),
+      );
+    }
+  } catch { /* key not set — skip */ }
+
+  if (attempts.length === 0) {
+    return res.status(500).json({ error: 'No API keys configured' });
   }
 
   try {
-    const result = await callOpenRouter(messages);
+    const winner = await Promise.any(attempts);
     return res.status(200).json({
-      reply: result.reply,
-      provider: 'openrouter',
-      model: result.model,
+      reply: formatCleanReply(winner.reply),
+      provider: winner.provider,
+      model: winner.model,
     });
-  } catch (error) {
-    console.error('[chat] OpenRouter failed:', error.message);
-    failures.push({ provider: 'openrouter', error: error.message });
+  } catch (aggregateError) {
+    const failures = (aggregateError.errors || []).map((e) => e.message);
+    console.error('[chat] All models failed:', failures);
+    return res.status(502).json({
+      error: 'The study assistant is temporarily unavailable. Please try again.',
+      failures,
+    });
   }
-
-  return res.status(502).json({
-    error: 'The study assistant is temporarily unavailable. Please try again.',
-    failures,
-  });
 };
 
 module.exports.config = {

@@ -1,4 +1,4 @@
-﻿# Miscellaneous
+# Miscellaneous
 *.class
 *.log
 *.pyc
@@ -14,11 +14,12 @@ Thumbs.db
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# IntelliJ / VS Code related
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
