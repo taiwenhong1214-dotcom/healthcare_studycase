@@ -12,17 +12,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Quick question'), findsOneWidget);
-    expect(
-      find.text('Welcome · System Security and Threats'),
-      findsOneWidget,
-    );
+    expect(find.text('Welcome · System Security and Threats'), findsOneWidget);
 
-    for (final title in [
-      'Missing MFA',
-      'Outdated Systems',
-      'Poor Network Separation',
+    for (final (navLabel, title) in [
+      ('MFA', 'Missing MFA'),
+      ('Updates', 'Outdated Systems'),
+      ('Network', 'Poor Network Separation'),
     ]) {
-      await tester.tap(find.widgetWithText(TextButton, title).first);
+      await tester.tap(find.widgetWithText(TextButton, navLabel).first);
       await tester.pumpAndSettle();
       expect(find.text('Back to home'), findsOneWidget);
       expect(find.textContaining(title), findsWidgets);
@@ -41,10 +38,43 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(TextButton, 'Outdated Systems').first);
+    await tester.tap(find.widgetWithText(TextButton, 'Updates').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Back to home'), findsOneWidget);
     expect(find.textContaining('Old, unsupported software'), findsOneWidget);
+  });
+
+  testWidgets('the assistant bubble opens a chat sheet', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Ask the study assistant'), findsOneWidget);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Study assistant'), findsOneWidget);
+    expect(find.text('Ask about the Change Healthcare attack'), findsOneWidget);
+    expect(find.textContaining('I’m your study assistant'), findsOneWidget);
+    expect(find.byTooltip('Send'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Close assistant'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Study assistant'), findsNothing);
+
+    // Re-open, then tap the dimmed area outside the sheet.
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Study assistant'), findsOneWidget);
+
+    await tester.tapAt(const Offset(195, 80));
+    await tester.pumpAndSettle();
+    expect(find.text('Study assistant'), findsNothing);
   });
 }

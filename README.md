@@ -17,6 +17,7 @@ This study examines key architectural vulnerabilities, security risks, and pract
 - **Home:** A welcome banner card and the quick-question card.
 - **Missing MFA**, **Outdated Systems**, and **Poor Network Separation:** One page per vulnerability.
 - A fixed bottom navigation links every page. Each lesson page also has **Back to home** and **Previous / Next lesson** links.
+- A floating **AI study assistant** button sits above the bottom navigation. It opens a chat panel that answers questions about the case study.
 
 ---
 
@@ -33,12 +34,40 @@ This study examines key architectural vulnerabilities, security risks, and pract
 ## 📂 Repository Contents
 
 - [`lib/main.dart`](lib/main.dart): The Flutter version of the case study.
+- [`api/chat.js`](api/chat.js): Vercel serverless function for the AI study assistant.
 - [`public/`](public/): The compiled Flutter web build deployed to Vercel.
 - [`index.html`](index.html): The original HTML version.
 - [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): The standalone HTML source file.
 - [`assets/`](assets/): Font files and images for the Flutter app.
 - [`test/navigation_test.dart`](test/navigation_test.dart): Checks the home and lesson navigation.
 - [`README.md`](README.md): Project overview and vulnerability analysis.
+
+---
+
+## AI Study Assistant
+
+The floating bubble above the bottom navigation opens a chat panel. Requests go to
+`/api/chat`, which tries the providers in this order:
+
+1. **OpenCode Zen** — `OPENCODE_API_KEY`
+2. **OpenRouter** — `OPENROUTER_API_KEY`
+
+Both keys are configured in the Vercel project settings. Never put either key in
+`lib/main.dart` or any other client-side file.
+
+OpenCode uses `deepseek-v4.1-flash-free`. If it is unavailable, OpenRouter tries
+the same model list as the earlier project: `openai/gpt-oss-120b:free`,
+`anthropic/claude-opus-4.8:fast`, then `openai/gpt-5.4-nano`.
+
+For local web development, point the app at a running deployment of the API:
+
+```bash
+flutter run -d chrome \
+  --dart-define=AI_CHAT_ENDPOINT=https://healthcare-studycase.space/api/chat
+```
+
+On Android or iOS the endpoint cannot be relative, so always pass a full
+`AI_CHAT_ENDPOINT` URL when building a native app.
 
 ---
 

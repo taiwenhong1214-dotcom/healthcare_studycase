@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 // Flutter version of the original HTML case study.
@@ -20,6 +25,8 @@ class Lesson {
   const Lesson({
     required this.number,
     required this.title,
+    required this.navLabel,
+    required this.sectionLabel,
     required this.icon,
     required this.weakness,
     required this.risk,
@@ -28,6 +35,8 @@ class Lesson {
 
   final String number;
   final String title;
+  final String navLabel;
+  final String sectionLabel;
   final IconData icon;
   final String weakness;
   final String risk;
@@ -38,6 +47,8 @@ const lessons = [
   Lesson(
     number: '01',
     title: 'Missing MFA',
+    navLabel: 'MFA',
+    sectionLabel: 'First vulnerability',
     icon: Icons.smartphone,
     weakness: 'The affected remote-access portal only required login details.',
     risk: 'A stolen password could let an attacker enter.',
@@ -46,6 +57,8 @@ const lessons = [
   Lesson(
     number: '02',
     title: 'Outdated Systems',
+    navLabel: 'Updates',
+    sectionLabel: 'Second vulnerability',
     icon: Icons.dns,
     weakness: 'Old, unsupported software may stop receiving security updates.',
     risk: 'Attackers could exploit known security flaws.',
@@ -54,6 +67,8 @@ const lessons = [
   Lesson(
     number: '03',
     title: 'Poor Network Separation',
+    navLabel: 'Network',
+    sectionLabel: 'Third vulnerability',
     icon: Icons.hub,
     weakness: 'Unnecessary connections can let attackers reach other systems.',
     risk: 'One infected device could lead to a wider outage.',
@@ -122,76 +137,111 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: DefaultTextStyle(
-          // Material's default text style adds letter spacing, which makes
-          // the text wrap differently from the original CSS. Keep it at zero.
-          style: const TextStyle(
-            fontFamily: 'Arimo',
-            fontSize: 16,
-            height: 1.6,
-            letterSpacing: 0,
-            color: textColor,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 980),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          isMobile ? 18 : 24,
-                          isMobile ? 18 : 28,
-                          isMobile ? 18 : 24,
-                          isMobile ? 30 : 40,
-                        ),
-                        child: _selectedPage == 0
-                            ? _buildHome(isMobile, titleSize)
-                            : _buildLessonPage(isMobile),
-                      ),
-                    ),
+      body: DefaultTextStyle(
+        // Material's default text style adds letter spacing, which makes
+        // the text wrap differently from the original CSS. Keep it at zero.
+        style: const TextStyle(
+          fontFamily: 'Arimo',
+          fontSize: 16,
+          height: 1.6,
+          letterSpacing: 0,
+          color: textColor,
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isMobile ? 18 : 24,
+                    isMobile ? 18 : 28,
+                    isMobile ? 18 : 24,
+                    isMobile ? 30 : 40,
                   ),
+                  child: _selectedPage == 0
+                      ? _buildHome(isMobile, titleSize)
+                      : _buildLessonPage(isMobile),
                 ),
               ),
-              _buildNavBar(isMobile),
-            ],
+            ),
           ),
         ),
       ),
+      bottomNavigationBar: _buildNavBar(),
+      floatingActionButton: _buildAssistantButton(),
     );
   }
 
-  Widget _buildNavBar(bool isMobile) {
-    return Container(
+  void _openAssistant() {
+    final isMobile = MediaQuery.sizeOf(context).width <= 720;
+    if (isMobile) {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: true,
+        enableDrag: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: const Color.fromRGBO(38, 63, 57, 0.35),
+        builder: (context) => const StudyAssistantSheet(),
+      );
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const StudyAssistantSheet(isDialog: true),
+    );
+  }
+
+  Widget _buildAssistantButton() {
+    return FloatingActionButton(
+      onPressed: _openAssistant,
+      tooltip: 'Ask the study assistant',
+      backgroundColor: textColor,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      highlightElevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: const Icon(Icons.smart_toy, size: 27),
+    );
+  }
+
+  Widget _buildNavBar() {
+    return DecoratedBox(
       decoration: const BoxDecoration(
         color: bgColor,
         border: Border(top: BorderSide(color: borderColor)),
       ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 980),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 18 : 24,
-              vertical: 10,
-            ),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _navButton(0, 'Home', Icons.home_rounded, isMobile),
-                for (var i = 0; i < lessons.length; i++)
-                  _navButton(
-                    i + 1,
-                    lessons[i].title,
-                    lessons[i].icon,
-                    isMobile,
+      child: SafeArea(
+        top: false,
+        child: Center(
+          // The bottomNavigationBar slot passes loose height constraints,
+          // so Center must shrink-wrap the 64px tab row.
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: SizedBox(
+              height: 64,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _navButton(0, 'Home', 'Home', Icons.home_rounded),
                   ),
-              ],
+                  for (var i = 0; i < lessons.length; i++)
+                    Expanded(
+                      child: _navButton(
+                        i + 1,
+                        lessons[i].navLabel,
+                        lessons[i].title,
+                        lessons[i].icon,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -199,41 +249,55 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Widget _navButton(int page, String label, IconData icon, bool isMobile) {
+  Widget _navButton(int page, String label, String tooltip, IconData icon) {
     final selected = _selectedPage == page;
-    return TextButton(
-      onPressed: () => _goTo(page),
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 10 : 14,
-          vertical: 10,
-        ),
-        minimumSize: const Size(0, 40),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        backgroundColor: selected ? textColor : Colors.white,
-        foregroundColor: selected ? Colors.white : textColor,
-        side: BorderSide(color: selected ? textColor : borderColor),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        overlayColor: Colors.transparent,
-        splashFactory: NoSplash.splashFactory,
-        textStyle: const TextStyle(
-          fontFamily: 'Arimo',
-          fontSize: 13,
-          height: 1.2,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: selected ? Colors.white : tagTextColor),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(color: selected ? Colors.white : textColor),
+    final color = selected ? textColor : footerTextColor;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Tooltip(
+        message: tooltip,
+        child: TextButton(
+          onPressed: () => _goTo(page),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            minimumSize: const Size(0, 48),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: color,
+            overlayColor: selected
+                ? const Color.fromRGBO(38, 63, 57, 0.06)
+                : const Color.fromRGBO(38, 63, 57, 0.04),
+            shape: const RoundedRectangleBorder(),
+            textStyle: const TextStyle(
+              fontFamily: 'Arimo',
+              height: 1.2,
+              letterSpacing: 0,
+            ),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 24,
+                color: selected ? tagTextColor : footerTextColor,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.2,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -289,6 +353,29 @@ class _AppShellState extends State<AppShell> {
                     height: 1.6,
                     letterSpacing: 0,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: tagBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  lesson.sectionLabel,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.6,
+                    fontWeight: FontWeight.bold,
+                    color: tagTextColor,
                   ),
                 ),
               ),
@@ -453,6 +540,530 @@ class _AppShellState extends State<AppShell> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ChatMessage {
+  const _ChatMessage({
+    required this.text,
+    required this.isUser,
+    this.isIntro = false,
+  });
+
+  final String text;
+  final bool isUser;
+  final bool isIntro;
+}
+
+class StudyAssistantSheet extends StatefulWidget {
+  const StudyAssistantSheet({super.key, this.isDialog = false});
+
+  /// A dialog on desktop, a bottom sheet on phones.
+  final bool isDialog;
+
+  @override
+  State<StudyAssistantSheet> createState() => _StudyAssistantSheetState();
+}
+
+class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
+  static const _suggestions = [
+    'What happened at Change Healthcare?',
+    'Why does MFA matter?',
+    'How could this be prevented?',
+  ];
+
+  final TextEditingController _inputController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _inputFocus = FocusNode();
+  final List<_ChatMessage> _messages = [
+    _ChatMessage(
+      text:
+          'Hi! I’m your study assistant. Ask me anything about the Change '
+          'Healthcare attack or the security lessons in this case study.',
+      isUser: false,
+      isIntro: true,
+    ),
+  ];
+
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _scrollController.dispose();
+    _inputFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage([String? preset]) async {
+    final text = (preset ?? _inputController.text).trim();
+    if (text.isEmpty || _sending) return;
+
+    _inputController.clear();
+    setState(() {
+      _messages.add(_ChatMessage(text: text, isUser: true));
+      _sending = true;
+    });
+    _scrollToBottom();
+
+    try {
+      final reply = await _requestReply();
+      if (!mounted) return;
+      setState(() {
+        _messages.add(_ChatMessage(text: reply, isUser: false));
+        _sending = false;
+      });
+    } catch (error) {
+      debugPrint('Study assistant request failed: $error');
+      if (!mounted) return;
+      setState(() {
+        _messages.add(
+          const _ChatMessage(
+            text:
+                'Sorry, I can’t reach the study assistant right now. '
+                'Please check your connection and try again.',
+            isUser: false,
+          ),
+        );
+        _sending = false;
+      });
+    }
+    _scrollToBottom();
+  }
+
+  Future<String> _requestReply() async {
+    final uri = _chatEndpoint();
+    final history = _messages
+        .where((message) => !message.isIntro)
+        .map(
+          (message) => {
+            'role': message.isUser ? 'user' : 'assistant',
+            'content': message.text,
+          },
+        )
+        .toList();
+
+    final response = await http
+        .post(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({'messages': history}),
+        )
+        .timeout(const Duration(seconds: 70));
+
+    if (response.statusCode != 200) {
+      throw Exception('Assistant returned ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body);
+    final reply = data is Map<String, dynamic> ? data['reply'] : null;
+    if (reply is! String || reply.trim().isEmpty) {
+      throw Exception('Assistant returned an empty reply');
+    }
+    return reply.trim();
+  }
+
+  Uri _chatEndpoint() {
+    const override = String.fromEnvironment('AI_CHAT_ENDPOINT');
+    if (override.isNotEmpty) return Uri.parse(override);
+    if (kIsWeb) return Uri.base.resolve('/api/chat');
+    throw Exception(
+      'Set AI_CHAT_ENDPOINT to the deployed /api/chat URL when running on '
+      'mobile, for example: '
+      '--dart-define=AI_CHAT_ENDPOINT=https://healthcare-studycase.space/api/chat',
+    );
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final availableHeight = media.size.height - media.viewInsets.bottom;
+    final panelHeight = math.min(680.0, availableHeight * 0.85);
+    final panelWidth = widget.isDialog ? 440.0 : 560.0;
+    final bottomSafeArea = media.viewInsets.bottom > 0
+        ? 0.0
+        : media.padding.bottom;
+
+    final panel = Container(
+      width: widget.isDialog ? panelWidth : double.infinity,
+      height: panelHeight,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border.all(color: borderColor),
+        borderRadius: widget.isDialog
+            ? BorderRadius.circular(20)
+            : const BorderRadius.vertical(top: Radius.circular(22)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(38, 63, 57, 0.18),
+            blurRadius: 30,
+            offset: Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          if (!widget.isDialog) _buildDragHandle(),
+          _buildHeader(context),
+          const Divider(height: 1, thickness: 1, color: borderColor),
+          Expanded(child: _buildMessages()),
+          _buildComposer(bottomSafeArea),
+        ],
+      ),
+    );
+
+    if (widget.isDialog) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(24),
+        child: panel,
+      );
+    }
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      // Without heightFactor, Align fills the whole sheet route and swallows
+      // taps that should land on the modal barrier. Shrink-wrap to the panel.
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: panelWidth),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+          child: panel,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDragHandle() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 2),
+      child: Container(
+        width: 38,
+        height: 4,
+        decoration: BoxDecoration(
+          color: dividerColor,
+          borderRadius: BorderRadius.circular(999),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 8, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: tagBgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.smart_toy, size: 20, color: tagTextColor),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Study assistant',
+                  style: TextStyle(
+                    fontSize: 15.5,
+                    height: 1.25,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Ask about the Change Healthcare attack',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    height: 1.3,
+                    color: mutedTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: 'Close assistant',
+            icon: const Icon(Icons.close_rounded, size: 20),
+            style: IconButton.styleFrom(
+              foregroundColor: mutedTextColor,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(36, 36),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessages() {
+    final showSuggestions = _messages.length == 1 && !_sending;
+    return ListView(
+      controller: _scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      children: [
+        for (final message in _messages) _MessageBubble(message: message),
+        if (showSuggestions) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final suggestion in _suggestions)
+                ActionChip(
+                  label: Text(suggestion),
+                  onPressed: _sending ? null : () => _sendMessage(suggestion),
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: borderColor),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
+                  labelStyle: const TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 12,
+                    height: 1.3,
+                    color: linkColor,
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+            ],
+          ),
+        ],
+        if (_sending) ...[const SizedBox(height: 12), const _ThinkingBubble()],
+      ],
+    );
+  }
+
+  Widget _buildComposer(double bottomSafeArea) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + bottomSafeArea),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: borderColor)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _inputController,
+              focusNode: _inputFocus,
+              minLines: 1,
+              maxLines: 4,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
+              style: const TextStyle(
+                fontFamily: 'Arimo',
+                fontSize: 14,
+                height: 1.45,
+                color: textColor,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Ask about the case study…',
+                hintStyle: const TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 14,
+                  color: footerTextColor,
+                ),
+                filled: true,
+                fillColor: bgColor,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: tagTextColor, width: 1.4),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: IconButton(
+              onPressed: _sending ? null : () => _sendMessage(),
+              tooltip: 'Send',
+              style: IconButton.styleFrom(
+                backgroundColor: textColor,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: tagBgColor,
+                disabledForegroundColor: tagTextColor,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
+              ),
+              icon: _sending
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: tagTextColor,
+                      ),
+                    )
+                  : const Icon(Icons.arrow_upward_rounded, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MessageBubble extends StatelessWidget {
+  const _MessageBubble({required this.message});
+
+  final _ChatMessage message;
+
+  @override
+  Widget build(BuildContext context) {
+    final isUser = message.isUser;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        children: [
+          if (!isUser)
+            Container(
+              width: 26,
+              height: 26,
+              margin: const EdgeInsets.only(top: 2, right: 8),
+              decoration: BoxDecoration(
+                color: tagBgColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.smart_toy, size: 14, color: tagTextColor),
+            ),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+              decoration: BoxDecoration(
+                color: isUser ? textColor : Colors.white,
+                border: isUser ? null : Border.all(color: borderColor),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(isUser ? 16 : 5),
+                  bottomRight: Radius.circular(isUser ? 5 : 16),
+                ),
+              ),
+              child: Text(
+                message.text,
+                style: TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 13.5,
+                  height: 1.5,
+                  color: isUser ? Colors.white : textColor,
+                ),
+              ),
+            ),
+          ),
+          if (isUser) const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThinkingBubble extends StatelessWidget {
+  const _ThinkingBubble();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          margin: const EdgeInsets.only(top: 2, right: 8),
+          decoration: BoxDecoration(
+            color: tagBgColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.smart_toy, size: 14, color: tagTextColor),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: borderColor),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(16),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.8,
+                  color: tagTextColor,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Thinking…',
+                style: TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 13,
+                  height: 1.4,
+                  color: mutedTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
