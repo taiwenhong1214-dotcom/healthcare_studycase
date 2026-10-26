@@ -169,13 +169,21 @@ module.exports = async function handler(req, res) {
       const session = crypto.randomUUID();
       const probes = {
         'paid-deepseek': () => callOpenCode('deepseek-v4.1-flash', probe),
-        'go-deepseek': () =>
-          callOpenCode('deepseek-v4.1-flash', probe, {
+        'go-glm-flash': () =>
+          callOpenCode('glm-5.3-flash', probe, {
             url: OPENCODE_GO_URL,
             headers: { 'x-opencode-session': session },
           }),
-        'free-deepseek': () =>
-          callOpenCode('deepseek-v4.1-flash-free', probe),
+        'go-longcat': () =>
+          callOpenCode('longcat-2.0', probe, {
+            url: OPENCODE_GO_URL,
+            headers: { 'x-opencode-session': session },
+          }),
+        'go-beam': () =>
+          callOpenCode('beam-free', probe, {
+            url: OPENCODE_GO_URL,
+            headers: { 'x-opencode-session': session },
+          }),
       };
       const results = {};
       await Promise.all(
