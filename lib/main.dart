@@ -1083,39 +1083,45 @@ class _MessageBubble extends StatelessWidget {
   }
 
   Widget _buildFormattedContent(String rawText, TextStyle baseStyle, bool isUser) {
-    // Normalize bullets and excess blank lines for neat alignment
+    if (isUser) {
+      return Text(rawText.trim(), style: baseStyle);
+    }
+
+    // Completely strip any asterisks (*, **, ***) and normalize bullets and whitespace
     final text = rawText
-        .replaceAll(RegExp(r'^\s*[-*]\s+', multiLine: true), '• ')
+        .replaceAll(RegExp(r'^\s*[-*•]\s*', multiLine: true), '• ')
+        .replaceAll('*', '')
+        .replaceAll(RegExp(r'^(•\s*)+', multiLine: true), '• ')
         .replaceAll(RegExp(r'\n{3,}'), '\n\n')
         .trim();
 
-    if (isUser || !text.contains('**')) {
+    final titleRegex = RegExp(r'^(•\s*|\d+\.\s*)([^:：\n]+[:：])(.*)$');
+
+    // If it's a plain single-line response with no list labels, return standard Text
+    if (!text.contains('\n') && !titleRegex.hasMatch(text)) {
       return Text(text, style: baseStyle);
     }
 
+    final lines = text.split('\n');
     final spans = <InlineSpan>[];
-    final regex = RegExp(r'\*\*(.*?)\*\*');
-    int lastEnd = 0;
 
-    for (final match in regex.allMatches(text)) {
-      if (match.start > lastEnd) {
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final match = titleRegex.firstMatch(line);
+      if (match != null) {
+        spans.add(TextSpan(text: match.group(1), style: baseStyle));
         spans.add(TextSpan(
-          text: text.substring(lastEnd, match.start),
-          style: baseStyle,
+          text: match.group(2),
+          style: baseStyle.copyWith(fontWeight: FontWeight.bold),
         ));
+        spans.add(TextSpan(text: match.group(3), style: baseStyle));
+      } else {
+        spans.add(TextSpan(text: line, style: baseStyle));
       }
-      spans.add(TextSpan(
-        text: match.group(1),
-        style: baseStyle.copyWith(fontWeight: FontWeight.bold),
-      ));
-      lastEnd = match.end;
-    }
 
-    if (lastEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastEnd),
-        style: baseStyle,
-      ));
+      if (i < lines.length - 1) {
+        spans.add(const TextSpan(text: '\n'));
+      }
     }
 
     return Text.rich(

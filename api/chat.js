@@ -35,11 +35,12 @@ Scope & facts (answer ONLY about this case):
 
 Output Format & Layout (MUST be clean, neat, and well-aligned / 整齐规整):
 • Keep answers structured, tidy, and easy to skim.
+• NEVER use asterisks (*, **, or ***) anywhere in your output. Do not use asterisks for bold or italics.
 • For explanations or multi-point answers, structure cleanly:
   - Start with a direct 1-sentence summary.
   - Use clean bullet points (•) or numbered lists (1., 2., 3.).
-  - Format each point with a clear bold label, e.g.:
-    • **Point Title**: Brief, focused explanation.
+  - Format each point with a clean title and colon in plain text, e.g.:
+    • Point Title: Brief, focused explanation.
   - Keep each bullet point to 1-2 concise sentences.
 • For simple facts: Answer directly in 1-2 sentences without padding.
 • Do not output walls of unbroken text. Separate distinct thoughts with a single blank line.
@@ -55,8 +56,12 @@ function formatCleanReply(text) {
     .replace(/\r\n/g, '\n')
     // Remove markdown headers (### Header -> Header)
     .replace(/^#{1,6}\s+/gm, '')
-    // Normalize bullets (* or - at line start -> •)
-    .replace(/^[\t ]*[-*]\s+/gm, '• ')
+    // Normalize bullets (* or - or • at line start -> •)
+    .replace(/^[\t ]*[-*•]\s*/gm, '• ')
+    // Strip all asterisks (*, **, ***) completely
+    .replace(/\*+/g, '')
+    // Clean up duplicate bullet symbols
+    .replace(/^(•\s*)+/gm, '• ')
     // Collapse 3+ consecutive newlines to 2
     .replace(/\n{3,}/g, '\n\n')
     .trim();
