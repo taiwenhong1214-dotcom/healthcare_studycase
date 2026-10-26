@@ -16,6 +16,51 @@ const questionBgColor = Color(0xFFE6EEDF);
 const footerTextColor = Color(0xFF68766D);
 const linkColor = Color(0xFF3D624B);
 
+class Lesson {
+  const Lesson({
+    required this.number,
+    required this.title,
+    required this.icon,
+    required this.weakness,
+    required this.risk,
+    required this.solution,
+  });
+
+  final String number;
+  final String title;
+  final IconData icon;
+  final String weakness;
+  final String risk;
+  final String solution;
+}
+
+const lessons = [
+  Lesson(
+    number: '01',
+    title: 'Missing MFA',
+    icon: Icons.smartphone,
+    weakness: 'The affected remote-access portal only required login details.',
+    risk: 'A stolen password could let an attacker enter.',
+    solution: 'Require MFA, such as a password plus a security key.',
+  ),
+  Lesson(
+    number: '02',
+    title: 'Outdated Systems',
+    icon: Icons.dns,
+    weakness: 'Old, unsupported software may stop receiving security updates.',
+    risk: 'Attackers could exploit known security flaws.',
+    solution: 'Test and install updates. Replace unsupported systems.',
+  ),
+  Lesson(
+    number: '03',
+    title: 'Poor Network Separation',
+    icon: Icons.hub,
+    weakness: 'Unnecessary connections can let attackers reach other systems.',
+    risk: 'One infected device could lead to a wider outage.',
+    solution: 'Separate important systems and allow only necessary access.',
+  ),
+];
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -31,13 +76,43 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: bgColor,
         splashFactory: NoSplash.splashFactory,
       ),
-      home: const HomePage(),
+      home: const AppShell(),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  // 0 is the welcome page. 1, 2 and 3 are the three lessons.
+  int _selectedPage = 0;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _goTo(int page) {
+    if (page == _selectedPage) {
+      _scrollToTop();
+      return;
+    }
+    setState(() => _selectedPage = page);
+    _scrollToTop();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,53 +122,76 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: DefaultTextStyle(
-        // Material's default text style adds letter spacing, which makes the
-        // text wrap differently from the original CSS. Keep it at zero.
-        style: const TextStyle(
-          fontFamily: 'Arimo',
-          fontSize: 16,
-          height: 1.6,
-          letterSpacing: 0,
-          color: textColor,
-        ),
-        child: SingleChildScrollView(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 980),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 18 : 24,
-                  vertical: isMobile ? 30 : 48,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 880),
-                        child: _buildHeader(isMobile, titleSize),
+      body: SafeArea(
+        child: DefaultTextStyle(
+          // Material's default text style adds letter spacing, which makes
+          // the text wrap differently from the original CSS. Keep it at zero.
+          style: const TextStyle(
+            fontFamily: 'Arimo',
+            fontSize: 16,
+            height: 1.6,
+            letterSpacing: 0,
+            color: textColor,
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 980),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          isMobile ? 18 : 24,
+                          isMobile ? 18 : 28,
+                          isMobile ? 18 : 24,
+                          isMobile ? 30 : 40,
+                        ),
+                        child: _selectedPage == 0
+                            ? _buildHome(isMobile, titleSize)
+                            : _buildLessonPage(isMobile),
                       ),
                     ),
-                    SizedBox(height: isMobile ? 25 : 38),
-
-                    // Three lesson cards
-                    _buildCards(isMobile),
-
-                    // Empty paragraph in the HTML adds this space
-                    const SizedBox(height: 16),
-
-                    // Question and answer
-                    const QuestionSection(),
-                    const SizedBox(height: 25),
-
-                    // Footer
-                    const FooterSection(),
-                  ],
+                  ),
                 ),
               ),
+              _buildNavBar(isMobile),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavBar(bool isMobile) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: bgColor,
+        border: Border(top: BorderSide(color: borderColor)),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 980),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 18 : 24,
+              vertical: 10,
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _navButton(0, 'Home', Icons.home_rounded, isMobile),
+                for (var i = 0; i < lessons.length; i++)
+                  _navButton(
+                    i + 1,
+                    lessons[i].title,
+                    lessons[i].icon,
+                    isMobile,
+                  ),
+              ],
             ),
           ),
         ),
@@ -101,7 +199,166 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool isMobile, double titleSize) {
+  Widget _navButton(int page, String label, IconData icon, bool isMobile) {
+    final selected = _selectedPage == page;
+    return TextButton(
+      onPressed: () => _goTo(page),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 10 : 14,
+          vertical: 10,
+        ),
+        minimumSize: const Size(0, 40),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor: selected ? textColor : Colors.white,
+        foregroundColor: selected ? Colors.white : textColor,
+        side: BorderSide(color: selected ? textColor : borderColor),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        overlayColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        textStyle: const TextStyle(
+          fontFamily: 'Arimo',
+          fontSize: 13,
+          height: 1.2,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: selected ? Colors.white : tagTextColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(color: selected ? Colors.white : textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHome(bool isMobile, double titleSize) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Welcome banner card
+        Container(
+          padding: EdgeInsets.all(isMobile ? 20 : 23),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: borderColor),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: _buildWelcomeHeader(isMobile, titleSize),
+        ),
+        const SizedBox(height: 18),
+
+        // The quick question is part of the home page too.
+        const QuestionSection(),
+        const SizedBox(height: 25),
+        const FooterSection(),
+      ],
+    );
+  }
+
+  Widget _buildLessonPage(bool isMobile) {
+    final lesson = lessons[_selectedPage - 1];
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _goTo(0),
+                icon: const Icon(Icons.arrow_back, size: 17),
+                label: const Text('Back to home'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: linkColor,
+                  overlayColor: Colors.transparent,
+                  splashFactory: NoSplash.splashFactory,
+                  textStyle: const TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 13,
+                    height: 1.6,
+                    letterSpacing: 0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            LessonCard(
+              isMobile: isMobile,
+              number: lesson.number,
+              title: lesson.title,
+              icon: lesson.icon,
+              weakness: lesson.weakness,
+              risk: lesson.risk,
+              solution: lesson.solution,
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                if (_selectedPage > 1)
+                  _lessonNavButton(
+                    'Previous lesson',
+                    Icons.arrow_back,
+                    _selectedPage - 1,
+                  )
+                else
+                  const SizedBox.shrink(),
+                if (_selectedPage < lessons.length)
+                  _lessonNavButton(
+                    'Next lesson',
+                    Icons.arrow_forward,
+                    _selectedPage + 1,
+                  )
+                else
+                  const SizedBox.shrink(),
+              ],
+            ),
+            const SizedBox(height: 25),
+            const FooterSection(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _lessonNavButton(String label, IconData icon, int page) {
+    return TextButton.icon(
+      onPressed: () => _goTo(page),
+      icon: Icon(icon, size: 16),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 0),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        foregroundColor: linkColor,
+        overlayColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        textStyle: const TextStyle(
+          fontFamily: 'Arimo',
+          fontSize: 13,
+          height: 1.6,
+          letterSpacing: 0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeHeader(bool isMobile, double titleSize) {
     final headerText = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: isMobile
@@ -115,7 +372,7 @@ class HomePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Text(
-            'System Security and Threats',
+            'Welcome · System Security and Threats',
             style: TextStyle(fontSize: 12, height: 1.6, color: tagTextColor),
           ),
         ),
@@ -198,67 +455,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildCards(bool isMobile) {
-    final cards = [
-      LessonCard(
-        isMobile: isMobile,
-        number: '01',
-        title: 'Missing MFA',
-        icon: Icons.smartphone,
-        weakness:
-            'The affected remote-access portal only required login details.',
-        risk: 'A stolen password could let an attacker enter.',
-        solution: 'Require MFA, such as a password plus a security key.',
-      ),
-      LessonCard(
-        isMobile: isMobile,
-        number: '02',
-        title: 'Outdated Systems',
-        icon: Icons.dns,
-        weakness:
-            'Old, unsupported software may stop receiving security updates.',
-        risk: 'Attackers could exploit known security flaws.',
-        solution: 'Test and install updates. Replace unsupported systems.',
-      ),
-      LessonCard(
-        isMobile: isMobile,
-        number: '03',
-        title: 'Poor Network Separation',
-        icon: Icons.hub,
-        weakness:
-            'Unnecessary connections can let attackers reach other systems.',
-        risk: 'One infected device could lead to a wider outage.',
-        solution: 'Separate important systems and allow only necessary access.',
-      ),
-    ];
-
-    if (isMobile) {
-      return Column(
-        children: [
-          cards[0],
-          const SizedBox(height: 18),
-          cards[1],
-          const SizedBox(height: 18),
-          cards[2],
-        ],
-      );
-    }
-
-    // IntrinsicHeight makes all three cards the same height.
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: cards[0]),
-          const SizedBox(width: 18),
-          Expanded(child: cards[1]),
-          const SizedBox(width: 18),
-          Expanded(child: cards[2]),
-        ],
-      ),
-    );
-  }
 }
 
 class LessonCard extends StatelessWidget {
@@ -286,9 +482,7 @@ class LessonCard extends StatelessWidget {
     final padding = isMobile ? 20.0 : 23.0;
 
     return Container(
-      // The extra 2px at the bottom makes up for Flutter rounding text
-      // line heights down to whole pixels.
-      padding: EdgeInsets.fromLTRB(padding, padding, padding, padding + 14),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: borderColor),

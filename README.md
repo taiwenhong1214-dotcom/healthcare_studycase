@@ -12,6 +12,14 @@ This study examines key architectural vulnerabilities, security risks, and pract
 
 ---
 
+## 🧭 App Structure
+
+- **Home:** A welcome banner card and the quick-question card.
+- **Missing MFA**, **Outdated Systems**, and **Poor Network Separation:** One page per vulnerability.
+- A fixed bottom navigation links every page. Each lesson page also has **Back to home** and **Previous / Next lesson** links.
+
+---
+
 ## 🔍 Core Security Lessons Analyzed
 
 | # | Weakness | Risk | Recommended Countermeasure |
@@ -29,6 +37,7 @@ This study examines key architectural vulnerabilities, security risks, and pract
 - [`index.html`](index.html): The original HTML version.
 - [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): The standalone HTML source file.
 - [`assets/`](assets/): Font files and images for the Flutter app.
+- [`test/navigation_test.dart`](test/navigation_test.dart): Checks the home and lesson navigation.
 - [`README.md`](README.md): Project overview and vulnerability analysis.
 
 ---
