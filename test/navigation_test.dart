@@ -77,4 +77,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Study assistant'), findsNothing);
   });
+
+  testWidgets('chat history survives closing the assistant', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final session = ChatSession(
+      responder: (history) async => 'Canned study answer',
+    );
+    addTearDown(session.dispose);
+
+    await tester.pumpWidget(MyApp(chatSession: session));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Explain MFA');
+    await tester.tap(find.byTooltip('Send'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explain MFA'), findsOneWidget);
+    expect(find.text('Canned study answer'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Close assistant'));
+    await tester.pumpAndSettle();
+    expect(find.text('Study assistant'), findsNothing);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explain MFA'), findsOneWidget);
+    expect(find.text('Canned study answer'), findsOneWidget);
+
+    // A fresh app start, like a page refresh, starts a new session.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explain MFA'), findsNothing);
+    expect(find.text('Canned study answer'), findsNothing);
+  });
 }

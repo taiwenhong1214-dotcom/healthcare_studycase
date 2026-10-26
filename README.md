@@ -46,8 +46,11 @@ This study examines key architectural vulnerabilities, security risks, and pract
 
 ## AI Study Assistant
 
-The floating bubble above the bottom navigation opens a chat panel. Requests go to
-`/api/chat`, which tries the providers in this order:
+The floating bubble above the bottom navigation opens a chat panel. Closing the
+panel keeps the conversation for the current page session; refreshing the page
+starts a new chat. The assistant answers only questions about this case study and
+follows a requested answer length (for example, “in 50 words” or “one sentence”).
+Requests go to `/api/chat`, which tries the providers in this order:
 
 1. **OpenCode Zen** — `OPENCODE_API_KEY`
 2. **OpenRouter** — `OPENROUTER_API_KEY`
@@ -55,14 +58,13 @@ The floating bubble above the bottom navigation opens a chat panel. Requests go 
 Both keys are configured in the Vercel project settings. Never put either key in
 `lib/main.dart` or any other client-side file.
 
-OpenCode uses the paid `deepseek-v4.1-flash` model through
-`https://opencode.ai/inference/openai/v1/chat/completions`. Free-tier
-OpenCode models are restricted to the OpenCode client, so they cannot be
-called from this serverless function. If OpenCode is unavailable (for
-example, the Console account has no credits), OpenRouter tries the same model
-list as the earlier project: `openai/gpt-oss-120b:free`,
-`anthropic/claude-opus-4.8:fast`, then `openai/gpt-5.4-nano`. Add credits in
-the OpenCode Console to activate the OpenCode path.
+OpenCode tries `deepseek-v4.1-flash-free`, then `glm-5.3-flash-free`
+through `https://opencode.ai/inference/openai/v1/chat/completions`. Free-tier
+OpenCode models are restricted to the OpenCode client, so they may be
+unavailable from this serverless function. If OpenCode is unavailable,
+OpenRouter uses `nvidia/nemotron-3.5-lightning:free`, then
+`nvidia/nemotron-3-ultra-550b-a55b:free`. To use OpenCode from this function
+reliably, switch to a paid OpenCode model and add Console credits.
 
 For local web development, point the app at a running deployment of the API:
 

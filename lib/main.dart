@@ -79,7 +79,11 @@ const lessons = [
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.chatSession});
+
+  /// Kept alive across assistant open/close cycles for tests and previews.
+  /// A normal app start creates a fresh session.
+  final ChatSession? chatSession;
 
   @override
   Widget build(BuildContext context) {
@@ -91,13 +95,15 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: bgColor,
         splashFactory: NoSplash.splashFactory,
       ),
-      home: const AppShell(),
+      home: AppShell(chatSession: chatSession),
     );
   }
 }
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key, this.chatSession});
+
+  final ChatSession? chatSession;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -107,9 +113,19 @@ class _AppShellState extends State<AppShell> {
   // 0 is the welcome page. 1, 2 and 3 are the three lessons.
   int _selectedPage = 0;
   final ScrollController _scrollController = ScrollController();
+  late final ChatSession _chatSession;
+  late final bool _ownsChatSession;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsChatSession = widget.chatSession == null;
+    _chatSession = widget.chatSession ?? ChatSession();
+  }
 
   @override
   void dispose() {
+    if (_ownsChatSession) _chatSession.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -185,7 +201,7 @@ class _AppShellState extends State<AppShell> {
         enableDrag: true,
         backgroundColor: Colors.transparent,
         barrierColor: const Color.fromRGBO(38, 63, 57, 0.35),
-        builder: (context) => const StudyAssistantSheet(),
+        builder: (context) => StudyAssistantSheet(session: _chatSession),
       );
       return;
     }
@@ -193,7 +209,8 @@ class _AppShellState extends State<AppShell> {
     showDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => const StudyAssistantSheet(isDialog: true),
+      builder: (context) =>
+          StudyAssistantSheet(session: _chatSession, isDialog: true),
     );
   }
 
@@ -544,8 +561,8 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
-class _ChatMessage {
-  const _ChatMessage({
+class ChatMessage {
+  const ChatMessage({
     required this.text,
     required this.isUser,
     this.isIntro = false,
@@ -556,97 +573,81 @@ class _ChatMessage {
   final bool isIntro;
 }
 
-class StudyAssistantSheet extends StatefulWidget {
-  const StudyAssistantSheet({super.key, this.isDialog = false});
+typedef ChatResponder =
+    Future<String> Function(List<Map<String, String>> history);
 
-  /// A dialog on desktop, a bottom sheet on phones.
-  final bool isDialog;
+/// Holds the conversation for as long as the app is running. Closing the
+/// assistant panel does not destroy it; a page refresh creates a new session.
+class ChatSession extends ChangeNotifier {
+  ChatSession({ChatResponder? responder})
+    : _responder = responder ?? _requestReply;
 
-  @override
-  State<StudyAssistantSheet> createState() => _StudyAssistantSheetState();
-}
-
-class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
-  static const _suggestions = [
-    'What happened at Change Healthcare?',
-    'Why does MFA matter?',
-    'How could this be prevented?',
-  ];
-
-  final TextEditingController _inputController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  final FocusNode _inputFocus = FocusNode();
-  final List<_ChatMessage> _messages = [
-    _ChatMessage(
+  final ChatResponder _responder;
+  final List<ChatMessage> messages = [
+    ChatMessage(
       text:
-          'Hi! I’m your study assistant. Ask me anything about the Change '
-          'Healthcare attack or the security lessons in this case study.',
+          'Hi! I’m your study assistant for the Change Healthcare case study. '
+          'Ask about the attack or the three lessons — you can request a '
+          'length, like “in 50 words.”',
       isUser: false,
       isIntro: true,
     ),
   ];
 
   bool _sending = false;
+  bool _disposed = false;
+
+  bool get sending => _sending;
+
+  Future<void> send(String rawText) async {
+    if (_disposed) return;
+    final text = rawText.trim();
+    if (text.isEmpty || _sending) return;
+
+    messages.add(ChatMessage(text: text, isUser: true));
+    _sending = true;
+    notifyListeners();
+
+    try {
+      final history = messages
+          .where((message) => !message.isIntro)
+          .map(
+            (message) => {
+              'role': message.isUser ? 'user' : 'assistant',
+              'content': message.text,
+            },
+          )
+          .toList();
+      final reply = await _responder(history);
+      if (_disposed) return;
+      messages.add(ChatMessage(text: reply, isUser: false));
+    } catch (error) {
+      if (_disposed) return;
+      debugPrint('Study assistant request failed: $error');
+      messages.add(
+        const ChatMessage(
+          text:
+              'Sorry, I can’t reach the study assistant right now. '
+              'Please check your connection and try again.',
+          isUser: false,
+        ),
+      );
+    } finally {
+      _sending = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
 
   @override
   void dispose() {
-    _inputController.dispose();
-    _scrollController.dispose();
-    _inputFocus.dispose();
+    _disposed = true;
     super.dispose();
   }
 
-  Future<void> _sendMessage([String? preset]) async {
-    final text = (preset ?? _inputController.text).trim();
-    if (text.isEmpty || _sending) return;
-
-    _inputController.clear();
-    setState(() {
-      _messages.add(_ChatMessage(text: text, isUser: true));
-      _sending = true;
-    });
-    _scrollToBottom();
-
-    try {
-      final reply = await _requestReply();
-      if (!mounted) return;
-      setState(() {
-        _messages.add(_ChatMessage(text: reply, isUser: false));
-        _sending = false;
-      });
-    } catch (error) {
-      debugPrint('Study assistant request failed: $error');
-      if (!mounted) return;
-      setState(() {
-        _messages.add(
-          const _ChatMessage(
-            text:
-                'Sorry, I can’t reach the study assistant right now. '
-                'Please check your connection and try again.',
-            isUser: false,
-          ),
-        );
-        _sending = false;
-      });
-    }
-    _scrollToBottom();
-  }
-
-  Future<String> _requestReply() async {
-    final uri = _chatEndpoint();
-    final history = _messages
-        .where((message) => !message.isIntro)
-        .map(
-          (message) => {
-            'role': message.isUser ? 'user' : 'assistant',
-            'content': message.text,
-          },
-        )
-        .toList();
-
+  static Future<String> _requestReply(List<Map<String, String>> history) async {
     final response = await http
         .post(
-          uri,
+          _chatEndpoint(),
           headers: const {'Content-Type': 'application/json'},
           body: jsonEncode({'messages': history}),
         )
@@ -664,7 +665,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
     return reply.trim();
   }
 
-  Uri _chatEndpoint() {
+  static Uri _chatEndpoint() {
     const override = String.fromEnvironment('AI_CHAT_ENDPOINT');
     if (override.isNotEmpty) return Uri.parse(override);
     if (kIsWeb) return Uri.base.resolve('/api/chat');
@@ -673,6 +674,68 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
       'mobile, for example: '
       '--dart-define=AI_CHAT_ENDPOINT=https://healthcare-studycase.space/api/chat',
     );
+  }
+}
+
+class StudyAssistantSheet extends StatefulWidget {
+  const StudyAssistantSheet({
+    super.key,
+    required this.session,
+    this.isDialog = false,
+  });
+
+  final ChatSession session;
+
+  /// A dialog on desktop, a bottom sheet on phones.
+  final bool isDialog;
+
+  @override
+  State<StudyAssistantSheet> createState() => _StudyAssistantSheetState();
+}
+
+class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
+  static const _suggestions = [
+    'Summarize the attack in 50 words',
+    'Why does MFA matter?',
+    'How could this be prevented?',
+  ];
+
+  final TextEditingController _inputController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _inputFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.session.addListener(_onSessionChanged);
+    // Reopening the panel should show the latest message, not the intro.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.session.removeListener(_onSessionChanged);
+    _inputController.dispose();
+    _scrollController.dispose();
+    _inputFocus.dispose();
+    super.dispose();
+  }
+
+  void _onSessionChanged() {
+    if (!mounted) return;
+    setState(() {});
+    _scrollToBottom();
+  }
+
+  Future<void> _sendMessage([String? preset]) async {
+    final text = (preset ?? _inputController.text).trim();
+    if (text.isEmpty || widget.session.sending) return;
+
+    _inputController.clear();
+    await widget.session.send(text);
   }
 
   void _scrollToBottom() {
@@ -822,12 +885,14 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
   }
 
   Widget _buildMessages() {
-    final showSuggestions = _messages.length == 1 && !_sending;
+    final messages = widget.session.messages;
+    final sending = widget.session.sending;
+    final showSuggestions = messages.length == 1 && !sending;
     return ListView(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       children: [
-        for (final message in _messages) _MessageBubble(message: message),
+        for (final message in messages) _MessageBubble(message: message),
         if (showSuggestions) ...[
           const SizedBox(height: 12),
           Wrap(
@@ -837,7 +902,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
               for (final suggestion in _suggestions)
                 ActionChip(
                   label: Text(suggestion),
-                  onPressed: _sending ? null : () => _sendMessage(suggestion),
+                  onPressed: sending ? null : () => _sendMessage(suggestion),
                   backgroundColor: Colors.white,
                   side: const BorderSide(color: borderColor),
                   shape: RoundedRectangleBorder(
@@ -858,12 +923,13 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
             ],
           ),
         ],
-        if (_sending) ...[const SizedBox(height: 12), const _ThinkingBubble()],
+        if (sending) ...[const SizedBox(height: 12), const _ThinkingBubble()],
       ],
     );
   }
 
   Widget _buildComposer(double bottomSafeArea) {
+    final sending = widget.session.sending;
     return Container(
       padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + bottomSafeArea),
       decoration: const BoxDecoration(
@@ -921,7 +987,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
             width: 44,
             height: 44,
             child: IconButton(
-              onPressed: _sending ? null : () => _sendMessage(),
+              onPressed: sending ? null : () => _sendMessage(),
               tooltip: 'Send',
               style: IconButton.styleFrom(
                 backgroundColor: textColor,
@@ -933,7 +999,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
-              icon: _sending
+              icon: sending
                   ? const SizedBox(
                       width: 18,
                       height: 18,
@@ -954,7 +1020,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message});
 
-  final _ChatMessage message;
+  final ChatMessage message;
 
   @override
   Widget build(BuildContext context) {
