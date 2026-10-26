@@ -5,13 +5,16 @@
 //   2. OpenRouter  (OPENROUTER_API_KEY)
 //
 // The OpenRouter model list matches the earlier project. OpenCode is tried
-// first with its free general-purpose model, then OpenRouter takes over.
+// first with a paid model, then OpenRouter takes over.
+//
+// OpenCode's free models only work inside the OpenCode client. External apps
+// must use a paid model (or OpenCode Go), so this uses the inexpensive paid
+// DeepSeek V4.1 Flash model instead.
 
-const OPENCODE_URL = 'https://opencode.ai/zen/v1/chat/completions';
-const OPENCODE_MODELS = [
-  'deepseek-v4.1-flash-free',
-  'nemotron-3.5-lightning-free',
-];
+const OPENCODE_URL = 'https://opencode.ai/inference/openai/v1/chat/completions';
+const OPENCODE_GO_URL =
+  'https://opencode.ai/inference/go/openai/v1/chat/completions';
+const OPENCODE_MODELS = ['deepseek-v4.1-flash'];
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODELS = [
@@ -55,17 +58,23 @@ function sanitizeMessages(rawMessages) {
     .filter((message) => message.content.length > 0);
 }
 
-async function callOpenCode(model, messages) {
+async function callOpenCode(
+  model,
+  messages,
+  { url = OPENCODE_URL, headers = {} } = {},
+) {
   const apiKey = process.env.OPENCODE_API_KEY;
   if (!apiKey) {
     throw new Error('OPENCODE_API_KEY is not configured');
   }
 
-  const response = await fetch(OPENCODE_URL, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
+      'User-Agent': 'ChangeHealthcareStudyAssistant/1.0',
+      ...headers,
     },
     body: JSON.stringify({
       model,
@@ -149,6 +158,43 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
+  }
+
+  // Temporary deployment diagnostic. Removed once the provider setup is
+  // confirmed.
+  if (req.method === 'GET') {
+    const url = new URL(req.url, 'https://healthcare-studycase.space');
+    if (url.searchParams.get('diag') === 'hc-setup-check-8b1f4d') {
+      const probe = [{ role: 'user', content: 'Reply with exactly: OK' }];
+      const session = crypto.randomUUID();
+      const probes = {
+        'paid-deepseek': () => callOpenCode('deepseek-v4.1-flash', probe),
+        'go-deepseek': () =>
+          callOpenCode('deepseek-v4.1-flash', probe, {
+            url: OPENCODE_GO_URL,
+            headers: { 'x-opencode-session': session },
+          }),
+        'free-deepseek': () =>
+          callOpenCode('deepseek-v4.1-flash-free', probe),
+      };
+      const results = {};
+      await Promise.all(
+        Object.entries(probes).map(async ([name, run]) => {
+          try {
+            results[name] = { ok: true, reply: (await run()).slice(0, 80) };
+          } catch (error) {
+            results[name] = { ok: false, error: error.message };
+          }
+        }),
+      );
+      return res.status(200).json({
+        keys: {
+          opencode: Boolean(process.env.OPENCODE_API_KEY),
+          openrouter: Boolean(process.env.OPENROUTER_API_KEY),
+        },
+        results,
+      });
+    }
   }
 
   if (req.method !== 'POST') {
