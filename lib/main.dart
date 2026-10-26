@@ -561,6 +561,13 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
+class RateLimitException implements Exception {
+  const RateLimitException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 class ChatMessage {
   const ChatMessage({
     required this.text,
@@ -624,11 +631,13 @@ class ChatSession extends ChangeNotifier {
     } catch (error) {
       if (_disposed) return;
       debugPrint('Study assistant request failed: $error');
+      final errorText = error is RateLimitException
+          ? error.message
+          : 'Sorry, I can’t reach the study assistant right now. '
+              'Please check your connection and try again.';
       messages.add(
-        const ChatMessage(
-          text:
-              'Sorry, I can’t reach the study assistant right now. '
-              'Please check your connection and try again.',
+        ChatMessage(
+          text: errorText,
           isUser: false,
         ),
       );
@@ -654,6 +663,19 @@ class ChatSession extends ChangeNotifier {
         .timeout(const Duration(seconds: 70));
 
     if (response.statusCode != 200) {
+      if (response.statusCode == 429) {
+        try {
+          final data = jsonDecode(response.body);
+          if (data is Map && data['error'] is String) {
+            throw RateLimitException(data['error'] as String);
+          }
+        } catch (e) {
+          if (e is RateLimitException) rethrow;
+        }
+        throw const RateLimitException(
+          'Please slow down and wait a few seconds before asking again.',
+        );
+      }
       throw Exception('Assistant returned ${response.statusCode}');
     }
 

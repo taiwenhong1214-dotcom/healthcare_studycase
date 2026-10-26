@@ -213,6 +213,66 @@ function openRouterHeaders() {
   };
 }
 
+// ── IP Rate Limiter ────────────────────────────────────────────────────
+// Policy: Max 5 requests / minute per IP + minimum 3s cooldown between requests.
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 60 seconds
+const MAX_REQUESTS_PER_WINDOW = 5;
+const COOLDOWN_MS = 3 * 1000; // 3 seconds
+
+const ipRateMap = new Map();
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.length > 0) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.headers['x-real-ip'] || req.socket?.remoteAddress || '127.0.0.1';
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = ipRateMap.get(ip) || { timestamps: [], lastRequest: 0 };
+
+  // 1. Cooldown check: minimum 3s between requests
+  if (record.lastRequest && (now - record.lastRequest) < COOLDOWN_MS) {
+    const waitSeconds = Math.ceil((COOLDOWN_MS - (now - record.lastRequest)) / 1000);
+    return {
+      allowed: false,
+      retryAfter: waitSeconds,
+      message: `Please wait ${waitSeconds}s before asking another question.`,
+    };
+  }
+
+  // 2. Sliding window check: max 5 requests per 60 seconds
+  const recent = record.timestamps.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
+    const waitSeconds = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - recent[0])) / 1000);
+    return {
+      allowed: false,
+      retryAfter: waitSeconds,
+      message: `Rate limit reached (max 5 questions/minute). Please wait ${waitSeconds}s before asking again.`,
+    };
+  }
+
+  // Record allowed request
+  recent.push(now);
+  ipRateMap.set(ip, {
+    timestamps: recent,
+    lastRequest: now,
+  });
+
+  // Keep memory bounded across long-running serverless instances
+  if (ipRateMap.size > 1000) {
+    for (const [key, val] of ipRateMap.entries()) {
+      if (now - val.lastRequest > RATE_LIMIT_WINDOW_MS) {
+        ipRateMap.delete(key);
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
 // ── Main handler ───────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -237,6 +297,14 @@ module.exports = async function handler(req, res) {
   }
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Server-side rate limiting: 5 req/min per IP + 3s cooldown
+  const clientIp = getClientIp(req);
+  const rateLimit = checkRateLimit(clientIp);
+  if (!rateLimit.allowed) {
+    res.setHeader('Retry-After', String(rateLimit.retryAfter));
+    return res.status(429).json({ error: rateLimit.message });
   }
 
   let body = req.body;
