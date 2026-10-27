@@ -1,14 +1,17 @@
 // Study assistant backend for the Change Healthcare case study.
 //
-// Performance strategy:
-//   - Race all providers/models in parallel — first successful reply wins.
+// Performance & quota strategy:
+//   - Fallback sequence: try models one-by-one sequentially to conserve API quota.
+//   - First successful reply is returned immediately; remaining models are never called.
 //   - Compact system prompt to reduce input tokens and generation latency.
 //   - Cap output with max_tokens to prevent rambling on free-tier models.
-//   - Stream the response so the user sees tokens as they arrive.
+//   - Stream the response if requested by client.
 //
-// Provider order (raced in parallel):
-//   1. OpenCode Zen (OPENCODE_API_KEY)
-//   2. OpenRouter  (OPENROUTER_API_KEY)
+// Fallback order (sequential):
+//   1. OpenCode Zen: deepseek-v4.1-flash-free
+//   2. OpenCode Zen: beam-free
+//   3. OpenRouter: nvidia/nemotron-3-ultra-550b-a55b:free
+//   4. OpenRouter: thinkingmachines/inkling:free
 
 const OPENCODE_URL = 'https://opencode.ai/inference/openai/v1/chat/completions';
 const OPENCODE_MODELS = ['deepseek-v4.1-flash-free', 'beam-free'];
@@ -273,6 +276,39 @@ function checkRateLimit(ip) {
   return { allowed: true };
 }
 
+// ── Candidate models builder ───────────────────────────────────────────
+// Returns an ordered list of candidate models to try sequentially.
+function getCandidates() {
+  const candidates = [];
+  try {
+    const ocHeaders = openCodeHeaders();
+    for (const model of OPENCODE_MODELS) {
+      candidates.push({
+        provider: 'opencode',
+        url: OPENCODE_URL,
+        model,
+        headers: ocHeaders,
+        timeoutMs: 10000,
+      });
+    }
+  } catch { /* key not set — skip */ }
+
+  try {
+    const orHeaders = openRouterHeaders();
+    for (const model of OPENROUTER_MODELS) {
+      candidates.push({
+        provider: 'openrouter',
+        url: OPENROUTER_URL,
+        model,
+        headers: orHeaders,
+        timeoutMs: 12000,
+      });
+    }
+  } catch { /* key not set — skip */ }
+
+  return candidates;
+}
+
 // ── Main handler ───────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -335,105 +371,96 @@ module.exports = async function handler(req, res) {
     (req.query && req.query.stream === '1');
 
   if (wantsStream) {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-
-    // Build all model attempts.
-    const attempts = [];
-    try {
-      const ocHeaders = openCodeHeaders();
-      for (const m of OPENCODE_MODELS) {
-        attempts.push({ url: OPENCODE_URL, model: m, headers: ocHeaders, timeoutMs: 10000 });
-      }
-    } catch { /* key not set — skip */ }
-    try {
-      const orHeaders = openRouterHeaders();
-      for (const m of OPENROUTER_MODELS) {
-        attempts.push({ url: OPENROUTER_URL, model: m, headers: orHeaders, timeoutMs: 12000 });
-      }
-    } catch { /* key not set — skip */ }
-
-    if (attempts.length === 0) {
+    const candidates = getCandidates();
+    if (candidates.length === 0) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Connection', 'keep-alive');
       res.write('data: {"error":"No API keys configured"}\n\n');
       return res.end();
     }
 
-    // Race all models in parallel. The first one to start producing
-    // tokens wins; the rest are left to settle (and ignored).
-    let settled = false;
-    const racePromises = attempts.map(
-      (a) =>
-        callModelStreaming({
-          ...a,
+    const failures = [];
+    for (const candidate of candidates) {
+      let headersSent = false;
+      let hasStreamedToken = false;
+      try {
+        await callModelStreaming({
+          url: candidate.url,
+          model: candidate.model,
           messages,
+          headers: candidate.headers,
+          timeoutMs: candidate.timeoutMs,
           onDelta: (token) => {
-            if (!settled) {
-              settled = true;
-              // Cancel interest in other promises (they'll still run
-              // but their deltas will be ignored below).
+            if (!headersSent) {
+              res.setHeader('Content-Type', 'text/event-stream');
+              res.setHeader('Connection', 'keep-alive');
+              res.flushHeaders?.();
+              headersSent = true;
             }
-            // Only forward deltas from the winning model.
-            if (settled) {
-              res.write(`data: ${JSON.stringify({ token })}\n\n`);
-            }
+            hasStreamedToken = true;
+            res.write(`data: ${JSON.stringify({ token })}\n\n`);
           },
-        }).then((fullReply) => ({ ok: true, reply: fullReply, model: a.model })),
-    );
+        });
 
-    // We need the *first to succeed*, not Promise.race (which resolves
-    // on the first to settle, including rejections). Use Promise.any.
-    try {
-      const winner = await Promise.any(racePromises);
-      res.write(`data: ${JSON.stringify({ done: true, model: winner.model })}\n\n`);
-    } catch (aggregateError) {
-      res.write(`data: ${JSON.stringify({ error: 'All models failed' })}\n\n`);
+        if (headersSent) {
+          res.write(`data: ${JSON.stringify({ done: true, model: candidate.model })}\n\n`);
+          return res.end();
+        }
+      } catch (err) {
+        console.warn(`[chat stream] ${candidate.provider}:${candidate.model} failed:`, err.message);
+        failures.push(`${candidate.model}: ${err.message}`);
+        // If tokens have already streamed to the client, abort rather than mixing streams
+        if (hasStreamedToken) {
+          res.write(`data: ${JSON.stringify({ error: 'Stream interrupted' })}\n\n`);
+          return res.end();
+        }
+      }
     }
+
+    if (!res.headersSent) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders?.();
+    }
+    res.write(`data: ${JSON.stringify({ error: 'All models failed', failures })}\n\n`);
     return res.end();
   }
 
   // ── JSON path (existing Flutter client) ────────────────────────────
-  // Race all providers/models in parallel — first success wins.
+  // Try models sequentially — first success returns immediately to conserve quota.
 
-  const attempts = [];
-  try {
-    const ocHeaders = openCodeHeaders();
-    for (const m of OPENCODE_MODELS) {
-      attempts.push(
-        callModelJSON({ url: OPENCODE_URL, model: m, messages, headers: ocHeaders, timeoutMs: 10000 })
-          .then((r) => ({ ...r, provider: 'opencode' })),
-      );
-    }
-  } catch { /* key not set — skip */ }
-  try {
-    const orHeaders = openRouterHeaders();
-    for (const m of OPENROUTER_MODELS) {
-      attempts.push(
-        callModelJSON({ url: OPENROUTER_URL, model: m, messages, headers: orHeaders, timeoutMs: 12000 })
-          .then((r) => ({ ...r, provider: 'openrouter' })),
-      );
-    }
-  } catch { /* key not set — skip */ }
-
-  if (attempts.length === 0) {
+  const candidates = getCandidates();
+  if (candidates.length === 0) {
     return res.status(500).json({ error: 'No API keys configured' });
   }
 
-  try {
-    const winner = await Promise.any(attempts);
-    return res.status(200).json({
-      reply: formatCleanReply(winner.reply),
-      provider: winner.provider,
-      model: winner.model,
-    });
-  } catch (aggregateError) {
-    const failures = (aggregateError.errors || []).map((e) => e.message);
-    console.error('[chat] All models failed:', failures);
-    return res.status(502).json({
-      error: 'The study assistant is temporarily unavailable. Please try again.',
-      failures,
-    });
+  const failures = [];
+  for (const candidate of candidates) {
+    try {
+      const result = await callModelJSON({
+        url: candidate.url,
+        model: candidate.model,
+        messages,
+        headers: candidate.headers,
+        timeoutMs: candidate.timeoutMs,
+      });
+
+      return res.status(200).json({
+        reply: formatCleanReply(result.reply),
+        provider: candidate.provider,
+        model: result.model,
+      });
+    } catch (err) {
+      console.warn(`[chat] Candidate ${candidate.provider}:${candidate.model} failed:`, err.message);
+      failures.push(`${candidate.model}: ${err.message}`);
+    }
   }
+
+  console.error('[chat] All models failed sequentially:', failures);
+  return res.status(502).json({
+    error: 'The study assistant is temporarily unavailable. Please try again.',
+    failures,
+  });
 };
 
 module.exports.config = {
