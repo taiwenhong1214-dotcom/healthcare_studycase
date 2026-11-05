@@ -12,7 +12,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Quick question'), findsOneWidget);
-    expect(find.text('Welcome · System Security and Threats'), findsOneWidget);
+    expect(
+      find.text('Case study · System Security and Threats'),
+      findsOneWidget,
+    );
 
     for (final (navLabel, title) in [
       ('MFA', 'Missing MFA'),
@@ -30,6 +33,20 @@ void main() {
     expect(find.text('Quick question'), findsOneWidget);
   });
 
+  testWidgets('quick question gives immediate feedback', (tester) async {
+    tester.view.physicalSize = const Size(390, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('No — always patch'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('That’s right'), findsOneWidget);
+  });
+
   testWidgets('desktop navigation opens a lesson', (tester) async {
     tester.view.physicalSize = const Size(1280, 1000);
     tester.view.devicePixelRatio = 1;
@@ -45,7 +62,7 @@ void main() {
     expect(find.textContaining('Old, unsupported software'), findsOneWidget);
   });
 
-  testWidgets('the assistant bubble opens a chat sheet', (tester) async {
+  testWidgets('the assistant button opens a chat sheet', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -55,7 +72,7 @@ void main() {
 
     expect(find.byTooltip('Ask the study assistant'), findsOneWidget);
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byTooltip('Ask the study assistant'));
     await tester.pumpAndSettle();
 
     expect(find.text('Study assistant'), findsOneWidget);
@@ -69,7 +86,7 @@ void main() {
     expect(find.text('Study assistant'), findsNothing);
 
     // Re-open, then tap the dimmed area outside the sheet.
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byTooltip('Ask the study assistant'));
     await tester.pumpAndSettle();
     expect(find.text('Study assistant'), findsOneWidget);
 
@@ -91,7 +108,7 @@ void main() {
     await tester.pumpWidget(MyApp(chatSession: session));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byTooltip('Ask the study assistant'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Explain MFA');
@@ -105,7 +122,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Study assistant'), findsNothing);
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byTooltip('Ask the study assistant'));
     await tester.pumpAndSettle();
 
     expect(find.text('Explain MFA'), findsOneWidget);
@@ -116,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byTooltip('Ask the study assistant'));
     await tester.pumpAndSettle();
 
     expect(find.text('Explain MFA'), findsNothing);

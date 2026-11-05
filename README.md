@@ -14,10 +14,14 @@ This study examines key architectural vulnerabilities, security risks, and pract
 
 ## 🧭 App Structure
 
-- **Home:** A welcome banner card and the quick-question card.
-- **Missing MFA**, **Outdated Systems**, and **Poor Network Separation:** One page per vulnerability.
-- A fixed bottom navigation links every page. Each lesson page also has **Back to home** and **Previous / Next lesson** links.
-- A floating **AI study assistant** button sits above the bottom navigation. It opens a chat panel that answers questions about the case study.
+- **Overview:** An editorial cover, three impact figures, a compact index of the
+  three weaknesses, and a quick knowledge-check question.
+- **Missing MFA**, **Outdated Systems**, and **Poor Network Separation:** One
+  focused reading page per vulnerability, with weakness, risk, and fix sections.
+- A fixed bottom navigation links the overview, all three lessons, and the study
+  assistant. Each lesson page also has **Back to home** and a next-lesson link.
+- The **Ask** tab opens the AI study assistant in a bottom sheet on phones and a
+  dialog on desktop.
 
 ---
 
@@ -36,17 +40,17 @@ This study examines key architectural vulnerabilities, security risks, and pract
 - [`lib/main.dart`](lib/main.dart): The Flutter version of the case study.
 - [`api/chat.js`](api/chat.js): Vercel serverless function for the AI study assistant.
 - [`public/`](public/): The compiled Flutter web build deployed to Vercel.
-- [`index.html`](index.html): The original HTML version.
-- [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): The standalone HTML source file.
+- [`index.html`](index.html): Standalone static HTML version matching the Flutter design.
+- [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): An identical copy of the standalone HTML version.
 - [`assets/`](assets/): Font files and images for the Flutter app.
-- [`test/navigation_test.dart`](test/navigation_test.dart): Checks the home and lesson navigation.
+- [`test/navigation_test.dart`](test/navigation_test.dart): Checks navigation, the quick question, and the assistant.
 - [`README.md`](README.md): Project overview and vulnerability analysis.
 
 ---
 
 ## AI Study Assistant
 
-The floating bubble above the bottom navigation opens a chat panel. Closing the
+The **Ask** tab in the bottom navigation opens a chat panel. Closing the
 panel keeps the conversation for the current page session; refreshing the page
 starts a new chat. The assistant answers only questions about this case study and
 follows a requested answer length (for example, “in 150 words” or “one sentence”).

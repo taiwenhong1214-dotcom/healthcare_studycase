@@ -2,275 +2,1681 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0B0D10" />
+    <meta
+      name="description"
+      content="Interactive case study of the 2024 Change Healthcare ransomware attack, its security weaknesses, risks, and safeguards."
+    />
     <title>Change Healthcare • Security Lessons</title>
     <style>
+      @font-face {
+        font-family: Arimo;
+        src: url("assets/fonts/Arimo-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: Arimo;
+        src: url("assets/fonts/Arimo-Bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --bg: #0b0d10;
+        --surface: #12161c;
+        --raised: #171c24;
+        --line: #232a34;
+        --line-strong: #323b48;
+        --text: #f1f4f6;
+        --text-2: #a9b3bf;
+        --text-3: #7a8593;
+        --accent: #6fd3b5;
+        --accent-ink: #0b211b;
+        --accent-surface: #132721;
+        --accent-line: #2a5045;
+        --danger: #e58c8c;
+        --warning: #d8b36c;
+        --warning-surface: #2a2317;
+        --warning-line: #4b3e28;
+      }
+
       * {
         box-sizing: border-box;
       }
+
+      html {
+        background: var(--bg);
+      }
+
       body {
         margin: 0;
-        background: #f5f7f4;
-        color: #263f39;
-        font:
-          16px/1.6 Arial,
-          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arimo, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        letter-spacing: 0;
+        -webkit-font-smoothing: antialiased;
       }
-      main {
-        max-width: 980px;
-        margin: auto;
-        padding: 48px 24px;
+
+      button,
+      input {
+        font: inherit;
       }
-      header {
-        max-width: 880px;
-        margin: 0 auto 38px;
+
+      button {
+        color: inherit;
       }
-      .topic-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 36px;
-        text-align: left;
-      }
-      .topic-content {
-        flex: 1;
-        max-width: 580px;
-      }
-      .tag {
-        display: inline-block;
-        background: #dfead9;
-        color: #34573a;
-        border-radius: 20px;
-        padding: 5px 14px;
-        font-size: 12px;
-      }
-      h1 {
-        font-size: clamp(28px, 4.2vw, 40px);
-        line-height: 1.15;
-        letter-spacing: -1.2px;
-        margin: 12px 0 10px;
-      }
-      .topic-content p {
-        color: #61716a;
-        font-size: 15px;
-        line-height: 1.55;
-        margin: 0;
-      }
-      .topic-gif {
-        width: 185px;
-        height: 185px;
-        object-fit: cover;
-        border-radius: 16px;
-        border: 1px solid #dfe5dd;
-        box-shadow: 0 6px 18px rgba(38, 63, 57, 0.1);
-        flex-shrink: 0;
-      }
-      h2 {
-        font-size: 19px;
-        line-height: 1.3;
-        margin: 13px 0;
-      }
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-      }
-      .card {
-        background: white;
-        border: 1px solid #dfe5dd;
-        border-radius: 14px;
-        padding: 23px;
-      }
-      .number {
-        display: grid;
-        place-items: center;
-        width: 38px;
-        height: 38px;
-        background: #e5efdf;
-        border-radius: 11px;
-        font-weight: bold;
-      }
-      .card p {
-        font-size: 14px;
-        margin: 12px 0;
-      }
-      .solution {
-        padding-top: 12px;
-        border-top: 1px solid #e6ebe3;
-      }
-      .note {
-        font-size: 12px;
-        color: #65736c;
-        margin: 16px 2px 28px;
-      }
-      .question {
-        background: #e6eedf;
-        border-radius: 14px;
-        padding: 23px;
-        text-align: center;
-      }
-      .question h2 {
-        margin-top: 0;
-      }
-      details {
-        margin: 15px auto 0;
-        max-width: 660px;
-      }
-      summary {
-        cursor: pointer;
-        display: list-item;
-        list-style-position: inside;
-        font-weight: bold;
-        font-size: 14px;
-      }
-      details p {
-        font-size: 14px;
-      }
-      summary:focus-visible,
-      a:focus-visible {
-        outline: 3px solid #536f42;
-        outline-offset: 4px;
-      }
-      footer {
-        text-align: center;
-        font-size: 12px;
-        color: #68766d;
-        margin-top: 25px;
-      }
+
       a {
-        color: #3d624b;
+        color: var(--accent);
         text-underline-offset: 3px;
       }
-      footer p {
-        margin: 8px 0;
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
       }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 48px 40px calc(120px + env(safe-area-inset-bottom));
+      }
+
+      .lesson-page {
+        max-width: 720px;
+      }
+
+      /* Overview ---------------------------------------------------------- */
+
+      .hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 48px;
+      }
+
+      .hero-copy {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-2);
+        font-size: 12.5px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .eyebrow .dot {
+        width: 6px;
+        height: 6px;
+        flex: none;
+        border-radius: 50%;
+        background: var(--danger);
+      }
+
+      .eyebrow.accent {
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      .hero h1 {
+        max-width: 600px;
+        margin: 18px 0 16px;
+        font-size: clamp(32px, 4.6vw, 44px);
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.8px;
+      }
+
+      .hero-copy > p {
+        max-width: 560px;
+        margin-bottom: 18px;
+        color: var(--text-2);
+        font-size: 16.5px;
+        line-height: 1.7;
+      }
+
+      .meta {
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      .hero-gif {
+        width: 210px;
+        height: 158px;
+        flex: none;
+        object-fit: cover;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin-top: 40px;
+        padding: 22px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat + .stat {
+        border-left: 1px solid var(--line);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 4px;
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.4;
+      }
+
+      .section {
+        margin-top: 48px;
+      }
+
+      .section h2 {
+        margin: 10px 0 8px;
+        font-size: 28px;
+        line-height: 1.2;
+        letter-spacing: -0.4px;
+      }
+
+      .section-intro {
+        color: var(--text-2);
+        font-size: 15.5px;
+        line-height: 1.7;
+      }
+
+      .lesson-list {
+        margin-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+
+      .lesson-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line);
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .lesson-row:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .lesson-number {
+        width: 36px;
+        flex: none;
+        color: var(--text-3);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .lesson-copy {
+        min-width: 0;
+      }
+
+      .lesson-copy h3 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.35;
+      }
+
+      .lesson-copy p {
+        margin: 2px 0 0;
+        overflow: hidden;
+        color: var(--text-2);
+        font-size: 13px;
+        line-height: 1.4;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .lesson-row .arrow,
+      .next .arrow {
+        margin-left: auto;
+        color: var(--text-3);
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      /* Quick question ---------------------------------------------------- */
+
+      .question {
+        margin-top: 48px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h2 {
+        max-width: 680px;
+        margin: 10px 0 18px;
+        font-size: 23px;
+        line-height: 1.4;
+        letter-spacing: -0.2px;
+      }
+
+      .choices {
+        display: flex;
+        gap: 12px;
+      }
+
+      .choice {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 13px 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: 12px;
+        background: transparent;
+        color: var(--text-2);
+        text-align: left;
+        cursor: pointer;
+        transition:
+          border-color 160ms ease,
+          background 160ms ease,
+          color 160ms ease;
+      }
+
+      .choice:hover {
+        border-color: var(--text-3);
+      }
+
+      .choice .radio {
+        position: relative;
+        width: 18px;
+        height: 18px;
+        flex: none;
+        border: 1.5px solid var(--text-3);
+        border-radius: 50%;
+      }
+
+      .choice[aria-pressed="true"] {
+        border-color: var(--accent);
+        background: var(--accent-surface);
+        color: var(--text);
+      }
+
+      .choice[aria-pressed="true"] .radio {
+        border-color: var(--accent);
+      }
+
+      .choice[aria-pressed="true"] .radio::after {
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        content: "";
+      }
+
+      .choice[data-answer="incorrect"][aria-pressed="true"] {
+        border-color: var(--warning);
+        background: var(--warning-surface);
+      }
+
+      .choice[data-answer="incorrect"][aria-pressed="true"] .radio {
+        border-color: var(--warning);
+      }
+
+      .choice[data-answer="incorrect"][aria-pressed="true"] .radio::after {
+        background: var(--warning);
+      }
+
+      .feedback {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid var(--accent-line);
+        border-radius: 12px;
+        background: var(--accent-surface);
+        color: var(--accent);
+      }
+
+      .feedback.incorrect {
+        border-color: var(--warning-line);
+        background: var(--warning-surface);
+        color: var(--warning);
+      }
+
+      .feedback-icon {
+        display: grid;
+        width: 18px;
+        height: 18px;
+        flex: none;
+        place-items: center;
+        margin-top: 2px;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .feedback-text {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Footer ------------------------------------------------------------ */
+
+      footer {
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      footer p {
+        margin: 0 0 8px;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration-color: var(--accent-line);
+      }
+
+      /* Lesson ------------------------------------------------------------ */
+
+      .lesson-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .back {
+        color: var(--text-2);
+        font-size: 13.5px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back:hover {
+        color: var(--text);
+      }
+
+      .lesson-count {
+        color: var(--text-3);
+        font-size: 12.5px;
+      }
+
+      .lesson-kicker {
+        margin-top: 36px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+      }
+
+      .lesson-title {
+        margin: 10px 0 14px;
+        font-size: 42px;
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.8px;
+      }
+
+      .lesson-summary {
+        max-width: 620px;
+        margin: 0;
+        color: var(--text-2);
+        font-size: 16.5px;
+        line-height: 1.7;
+      }
+
+      .detail-list {
+        margin-top: 40px;
+      }
+
+      .detail {
+        display: flex;
+        gap: 24px;
+        padding: 22px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .detail-label {
+        display: flex;
+        width: 120px;
+        flex: none;
+        align-items: center;
+        gap: 8px;
+        padding-top: 3px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .detail-label .dot {
+        width: 6px;
+        height: 6px;
+        flex: none;
+        border-radius: 50%;
+        background: var(--warning);
+      }
+
+      .detail-label.danger {
+        color: var(--danger);
+      }
+
+      .detail-label.danger .dot {
+        background: var(--danger);
+      }
+
+      .detail-label.warning {
+        color: var(--warning);
+      }
+
+      .detail p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+
+      .fix {
+        margin-top: 20px;
+        padding: 22px;
+        border: 1px solid var(--accent-line);
+        border-radius: 14px;
+        background: var(--accent-surface);
+      }
+
+      .fix-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .fix p {
+        margin: 10px 0 0;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+
+      .next {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 44px;
+        padding: 18px 4px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .next:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .next-label {
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      .next h3 {
+        margin: 4px 0 0;
+        font-size: 19px;
+        line-height: 1.35;
+      }
+
+      .next .arrow {
+        color: var(--accent);
+      }
+
+      .complete {
+        margin-top: 44px;
+        padding: 20px 4px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .complete h3 {
+        margin: 0 0 6px;
+        font-size: 17px;
+        line-height: 1.4;
+      }
+
+      .complete p {
+        margin: 0;
+        color: var(--text-2);
+        font-size: 15.5px;
+        line-height: 1.7;
+      }
+
+      /* Bottom navigation ------------------------------------------------ */
+
+      .bottom-nav {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 30;
+        padding: 6px 16px calc(6px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        background: var(--bg);
+      }
+
+      .nav-inner {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        max-width: 620px;
+        margin: 0 auto;
+      }
+
+      .nav-button {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 4px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text-3);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        cursor: pointer;
+      }
+
+      .nav-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .nav-button span {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .nav-button:hover {
+        color: var(--text-2);
+      }
+
+      .nav-button[aria-current="page"] {
+        background: var(--accent-surface);
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      /* Assistant --------------------------------------------------------- */
+
+      .assistant-backdrop {
+        position: fixed;
+        z-index: 40;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+      }
+
+      .assistant-panel {
+        position: fixed;
+        z-index: 50;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        width: 100%;
+        max-width: 560px;
+        height: 88vh;
+        max-height: 700px;
+        margin: 0 auto;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: 20px 20px 0 0;
+        background: var(--bg);
+      }
+
+      .assistant-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .assistant-header h2 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.3;
+      }
+
+      .assistant-header p {
+        margin: 2px 0 0;
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.4;
+      }
+
+      .close-button {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        flex: none;
+        place-items: center;
+        margin-left: auto;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-3);
+        cursor: pointer;
+      }
+
+      .close-button:hover {
+        color: var(--text);
+      }
+
+      .messages {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .assistant-handle {
+        display: grid;
+        padding: 10px 0 4px;
+        place-items: center;
+      }
+
+      .assistant-handle::before {
+        width: 36px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--line-strong);
+        content: "";
+      }
+
+      .bubble {
+        max-width: 100%;
+        padding: 11px 15px;
+        border-radius: 14px;
+        font-size: 13.5px;
+        line-height: 1.6;
+      }
+
+      .bubble.assistant {
+        align-self: flex-start;
+        border: 1px solid var(--line);
+        border-bottom-left-radius: 4px;
+        background: var(--surface);
+      }
+
+      .bubble.user {
+        align-self: flex-end;
+        border: 1px solid var(--accent-line);
+        border-bottom-right-radius: 4px;
+        background: var(--accent-surface);
+      }
+
+      .bubble strong {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .suggestion {
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--text-2);
+        font-size: 12px;
+        line-height: 1.3;
+        cursor: pointer;
+      }
+
+      .suggestion:hover {
+        border-color: var(--line-strong);
+        color: var(--text);
+      }
+
+      .thinking {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 0;
+        color: var(--text-2);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--line-strong);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .composer {
+        display: flex;
+        gap: 10px;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+      }
+
+      .composer input {
+        min-width: 0;
+        flex: 1;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        outline: none;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .composer input::placeholder {
+        color: var(--text-3);
+      }
+
+      .composer input:focus {
+        border-color: var(--accent);
+      }
+
+      .send {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: none;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        cursor: pointer;
+      }
+
+      .send:disabled {
+        background: var(--raised);
+        color: var(--text-3);
+        cursor: default;
+      }
+
+      /* Responsive -------------------------------------------------------- */
+
       @media (max-width: 720px) {
-        main {
-          padding: 30px 18px;
+        .page {
+          padding: 28px 22px calc(100px + env(safe-area-inset-bottom));
         }
-        .topic-header {
+
+        .hero {
+          display: block;
+        }
+
+        .hero-gif {
+          display: none;
+        }
+
+        .hero h1 {
+          margin-top: 14px;
+          font-size: 32px;
+        }
+
+        .hero-copy > p {
+          font-size: 15px;
+        }
+
+        .stats {
+          margin-top: 32px;
+          padding: 18px 0;
+        }
+
+        .stat strong {
+          font-size: 24px;
+        }
+
+        .stat span {
+          font-size: 11.5px;
+        }
+
+        .section,
+        .question,
+        footer {
+          margin-top: 40px;
+        }
+
+        .section h2 {
+          font-size: 24px;
+        }
+
+        .question h2 {
+          font-size: 20px;
+        }
+
+        .choices {
           flex-direction: column;
-          text-align: center;
-          gap: 20px;
         }
-        .topic-gif {
-          width: 140px;
-          height: 140px;
+
+        .lesson-top {
+          gap: 8px;
         }
-        .cards {
-          grid-template-columns: 1fr;
+
+        .lesson-kicker {
+          margin-top: 28px;
         }
-        .card {
-          padding: 20px;
+
+        .lesson-title {
+          font-size: 32px;
         }
-        header {
-          margin-bottom: 25px;
+
+        .lesson-summary {
+          font-size: 15px;
+        }
+
+        .detail {
+          flex-direction: column;
+          gap: 8px;
+          padding: 20px 0;
+        }
+
+        .detail-label {
+          width: auto;
+          padding-top: 0;
+        }
+
+        .detail p,
+        .fix p {
+          font-size: 15.5px;
+        }
+
+        .fix {
+          padding: 18px;
+        }
+
+        .next {
+          margin-top: 36px;
+        }
+
+        .next h3 {
+          font-size: 17px;
+        }
+
+        .bottom-nav {
+          padding-right: 8px;
+          padding-left: 8px;
+        }
+      }
+
+      @media (min-width: 721px) {
+        .assistant-panel {
+          top: 50%;
+          bottom: auto;
+          max-width: 460px;
+          height: min(700px, calc(100vh - 48px));
+          border-bottom: 1px solid var(--line);
+          border-radius: 18px;
+          transform: translateY(-50%);
+        }
+
+        .assistant-handle {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
         }
       }
     </style>
   </head>
   <body>
     <main>
-      <header>
-        <div class="topic-header">
-          <div class="topic-content">
-            <span class="tag">System Security and Threats</span>
-            <h1>Change Healthcare<br />Ransomware Attack (2024)</h1>
+      <!-- Overview ------------------------------------------------------- -->
+      <div id="home-view" class="page">
+        <header class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">
+              <span class="dot" aria-hidden="true"></span>
+              Case study · System Security and Threats
+            </div>
+            <h1>The Change Healthcare ransomware attack</h1>
             <p>
-              Attackers used stolen login details to enter a system without MFA. The
-              attack disrupted healthcare claims and payments.
+              Stolen login details led to a nationwide healthcare outage in 2024.
+              This short case study looks at the three weaknesses that made it
+              possible — and what would have stopped them.
             </p>
+            <div class="meta">3 lessons · About 8 minutes</div>
           </div>
           <img
+            class="hero-gif"
             src="laptop-hacking.gif"
+            width="210"
+            height="158"
             alt="Laptop hacking animation"
-            class="topic-gif"
           />
+        </header>
+
+        <div class="stats" aria-label="Incident impact">
+          <div class="stat">
+            <strong>1 in 3</strong>
+            <span>Americans affected</span>
+          </div>
+          <div class="stat">
+            <strong>$22M</strong>
+            <span>Ransom paid</span>
+          </div>
+          <div class="stat">
+            <strong>100M+</strong>
+            <span>Records exposed</span>
+          </div>
         </div>
-      </header>
-      <div class="cards">
-        <article class="card">
-          <span class="number">01</span>
-          <h2>Missing MFA</h2>
+
+        <section class="section" aria-labelledby="index-heading">
+          <div class="eyebrow accent">What went wrong</div>
+          <h2 id="index-heading">Three weaknesses, one breach</h2>
+          <p class="section-intro">
+            Each lesson explains one weakness, the risk it created, and the fix
+            that would have helped.
+          </p>
+          <div class="lesson-list">
+            <a class="lesson-row" href="?lesson=1" data-lesson="1">
+              <span class="lesson-number">01</span>
+              <div class="lesson-copy">
+                <h3>Missing MFA</h3>
+                <p>One stolen password was all it took.</p>
+              </div>
+              <span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="lesson-row" href="?lesson=2" data-lesson="2">
+              <span class="lesson-number">02</span>
+              <div class="lesson-copy">
+                <h3>Outdated Systems</h3>
+                <p>Old servers kept known flaws alive.</p>
+              </div>
+              <span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="lesson-row" href="?lesson=3" data-lesson="3">
+              <span class="lesson-number">03</span>
+              <div class="lesson-copy">
+                <h3>Poor Network Separation</h3>
+                <p>A flat network let the breach spread.</p>
+              </div>
+              <span class="arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="question" aria-labelledby="question-heading">
+          <div class="eyebrow accent">Quick question</div>
+          <h2 id="question-heading">
+            A hospital’s old server still works. Should it skip security updates?
+          </h2>
+          <div class="choices" role="group" aria-label="Answer choices">
+            <button
+              class="choice"
+              type="button"
+              data-answer="correct"
+              aria-pressed="false"
+            >
+              <span class="radio" aria-hidden="true"></span>
+              <span>No — always patch</span>
+            </button>
+            <button
+              class="choice"
+              type="button"
+              data-answer="incorrect"
+              aria-pressed="false"
+            >
+              <span class="radio" aria-hidden="true"></span>
+              <span>Yes — if it still works</span>
+            </button>
+          </div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite" hidden>
+            <span class="feedback-icon" id="feedback-icon" aria-hidden="true">✓</span>
+            <span class="feedback-text" id="feedback-text"></span>
+          </div>
+        </section>
+
+        <footer>
           <p>
-            <strong>Weakness:</strong> The affected remote-access portal only
-            required login details.
+            Learn more:
+            <a
+              href="https://www.cisa.gov/stopransomware/ransomware-guide"
+              target="_blank"
+              rel="noopener"
+              >CISA security guide</a
+            >
+            ·
+            <a
+              href="https://csrc.nist.gov/pubs/sp/1800/31/final"
+              target="_blank"
+              rel="noopener"
+              >NIST patching guide</a
+            >
           </p>
-          <p>
-            <strong>Risk:</strong> A stolen password could let an attacker
-            enter.
-          </p>
-          <p class="solution">
-            <strong>Solution:</strong> Require MFA, such as a password plus a
-            security key.
-          </p>
-        </article>
-        <article class="card">
-          <span class="number">02</span>
-          <h2>Outdated Systems</h2>
-          <p>
-            <strong>Weakness:</strong> Old, unsupported software may stop
-            receiving security updates.
-          </p>
-          <p>
-            <strong>Risk:</strong> Attackers could exploit known security flaws.
-          </p>
-          <p class="solution">
-            <strong>Solution:</strong> Test and install updates. Replace
-            unsupported systems.
-          </p>
-        </article>
-        <article class="card">
-          <span class="number">03</span>
-          <h2>Poor Network Separation</h2>
-          <p>
-            <strong>Weakness:</strong> Unnecessary connections can let attackers
-            reach other systems.
-          </p>
-          <p>
-            <strong>Risk:</strong> One infected device could lead to a wider
-            outage.
-          </p>
-          <p class="solution">
-            <strong>Solution:</strong> Separate important systems and allow only
-            necessary access.
-          </p>
-        </article>
+          <p>System Fundamentals · Extra learning content</p>
+        </footer>
       </div>
-      <p> </p>
-      <section class="question">
-        <h2>Quick question 💭</h2>
-        <p>
-          A hospital’s old server still works. Should it skip security updates?
-        </p>
-        <details>
-          <summary>Show answer</summary>
+
+      <!-- Lesson --------------------------------------------------------- -->
+      <div id="lesson-view" class="page lesson-page" hidden>
+        <div class="lesson-top">
+          <a class="back" href="./" id="back-home">← Back to home</a>
+          <span class="lesson-count" id="lesson-count">Lesson 1 of 3</span>
+        </div>
+        <div class="lesson-kicker" id="lesson-kicker"></div>
+        <h1 class="lesson-title" id="lesson-title"></h1>
+        <p class="lesson-summary" id="lesson-summary"></p>
+
+        <div class="detail-list">
+          <div class="detail">
+            <div class="detail-label warning">
+              <span class="dot" aria-hidden="true"></span>Weakness
+            </div>
+            <p id="lesson-weakness"></p>
+          </div>
+          <div class="detail">
+            <div class="detail-label danger">
+              <span class="dot" aria-hidden="true"></span>Risk
+            </div>
+            <p id="lesson-risk"></p>
+          </div>
+        </div>
+
+        <div class="fix">
+          <div class="fix-label">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 12 2 2 4-4" />
+              <path d="M12 3 4 7v5c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V7l-8-4Z" />
+            </svg>
+            The fix
+          </div>
+          <p id="lesson-solution"></p>
+        </div>
+
+        <a class="next" id="lesson-next" href="#">
+          <div>
+            <div class="next-label">NEXT LESSON</div>
+            <h3 id="next-title"></h3>
+          </div>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+
+        <div class="complete" id="lesson-complete" hidden>
+          <h3>You’ve reviewed all three weaknesses.</h3>
           <p>
-            <strong>No.</strong> Working does not mean secure. Test updates
-            using sample claims, check the results, and prepare a backup and
-            rollback plan before updating.
+            The quick question on the overview is a good way to check what stuck.
           </p>
-        </details>
-      </section>
-      <footer>
-        <p>
-          Learn more:
-          <a
-            href="https://www.cisa.gov/stopransomware/ransomware-guide"
-            target="_blank"
-            rel="noopener"
-            >CISA security guide</a
-          >
-          ·
-          <a
-            href="https://csrc.nist.gov/pubs/sp/1800/31/final"
-            target="_blank"
-            rel="noopener"
-            >NIST patching guide</a
-          >
-        </p>
-        <p>System Fundamental · Extra learning content</p>
-      </footer>
+        </div>
+
+        <footer>
+          <p>
+            Learn more:
+            <a
+              href="https://www.cisa.gov/stopransomware/ransomware-guide"
+              target="_blank"
+              rel="noopener"
+              >CISA security guide</a
+            >
+            ·
+            <a
+              href="https://csrc.nist.gov/pubs/sp/1800/31/final"
+              target="_blank"
+              rel="noopener"
+              >NIST patching guide</a
+            >
+          </p>
+          <p>System Fundamentals · Extra learning content</p>
+        </footer>
+      </div>
     </main>
+
+    <!-- Navigation ------------------------------------------------------ -->
+    <nav class="bottom-nav" aria-label="Primary">
+      <div class="nav-inner">
+        <button class="nav-button" type="button" data-page="0" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m3 10.5 9-7.5 9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+          </svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-button" type="button" data-page="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="7" y="2" width="10" height="20" rx="2" />
+            <path d="M10 18h4" />
+          </svg>
+          <span>MFA</span>
+        </button>
+        <button class="nav-button" type="button" data-page="2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="6" rx="2" />
+            <rect x="3" y="14" width="18" height="6" rx="2" />
+            <path d="M7 7h.01M7 17h.01" />
+          </svg>
+          <span>Updates</span>
+        </button>
+        <button class="nav-button" type="button" data-page="3">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="5" r="2.5" />
+            <circle cx="5" cy="19" r="2.5" />
+            <circle cx="19" cy="19" r="2.5" />
+            <path d="M12 7.5v4M12 11.5 6.5 16.7M12 11.5l5.5 5.2" />
+          </svg>
+          <span>Network</span>
+        </button>
+        <button
+          class="nav-button"
+          type="button"
+          id="ask-button"
+          aria-expanded="false"
+          aria-controls="assistant-panel"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1a8.6 8.6 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" />
+          </svg>
+          <span>Ask</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Assistant ------------------------------------------------------- -->
+    <div class="assistant-backdrop" id="assistant-backdrop" hidden></div>
+    <section
+      class="assistant-panel"
+      id="assistant-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="assistant-title"
+      hidden
+    >
+      <div class="assistant-handle" aria-hidden="true"></div>
+      <header class="assistant-header">
+        <div>
+          <h2 id="assistant-title">Study assistant</h2>
+          <p>Ask about the Change Healthcare attack</p>
+        </div>
+        <button
+          class="close-button"
+          id="assistant-close"
+          type="button"
+          aria-label="Close assistant"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </header>
+      <div class="messages" id="messages" aria-live="polite">
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+      <form class="composer" id="composer">
+        <input
+          id="chat-input"
+          type="text"
+          autocomplete="off"
+          placeholder="Ask about the case study…"
+          aria-label="Ask about the case study"
+        />
+        <button class="send" id="send-button" type="submit" aria-label="Send">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <script>
+      const LESSONS = [
+        {
+          number: "01",
+          title: "Missing MFA",
+          kicker: "Initial access",
+          summary:
+            "Attackers signed in to a remote-access portal with stolen credentials. The portal asked for a password, but nothing else.",
+          weakness:
+            "The remote-access portal only required a username and password.",
+          risk:
+            "A password stolen through phishing or reuse was enough to let an outsider into the network.",
+          solution:
+            "Require multi-factor authentication, ideally a phishing-resistant security key rather than a code that can be intercepted.",
+        },
+        {
+          number: "02",
+          title: "Outdated Systems",
+          kicker: "Known exploits",
+          summary:
+            "Once inside, the attackers found systems that had missed updates. Known flaws in that old software gave them a firmer foothold.",
+          weakness:
+            "Old, unsupported software may stop receiving security updates.",
+          risk:
+            "Attackers could exploit published vulnerabilities that already had fixes available.",
+          solution:
+            "Test and install updates on a regular schedule, and replace systems that can no longer receive patches.",
+        },
+        {
+          number: "03",
+          title: "Poor Network Separation",
+          kicker: "Lateral movement",
+          summary:
+            "Because the internal network was largely flat, the attackers could move from one system to another without meeting a real boundary.",
+          weakness:
+            "Unnecessary connections can let an attacker reach other systems.",
+          risk: "One infected device could lead to a much wider outage.",
+          solution:
+            "Separate important systems from each other and allow only the connections each one actually needs.",
+        },
+      ];
+
+      const homeView = document.getElementById("home-view");
+      const lessonView = document.getElementById("lesson-view");
+      const lessonCount = document.getElementById("lesson-count");
+      const lessonKicker = document.getElementById("lesson-kicker");
+      const lessonTitle = document.getElementById("lesson-title");
+      const lessonSummary = document.getElementById("lesson-summary");
+      const lessonWeakness = document.getElementById("lesson-weakness");
+      const lessonRisk = document.getElementById("lesson-risk");
+      const lessonSolution = document.getElementById("lesson-solution");
+      const lessonNext = document.getElementById("lesson-next");
+      const nextTitle = document.getElementById("next-title");
+      const lessonComplete = document.getElementById("lesson-complete");
+
+      function updateNav(page) {
+        document.querySelectorAll(".nav-button[data-page]").forEach((button) => {
+          if (Number(button.dataset.page) === page) {
+            button.setAttribute("aria-current", "page");
+          } else {
+            button.removeAttribute("aria-current");
+          }
+        });
+      }
+
+      function renderLesson(page) {
+        const lesson = LESSONS[page - 1];
+        lessonCount.textContent = `Lesson ${page} of ${LESSONS.length}`;
+        lessonKicker.textContent = lesson.kicker.toUpperCase();
+        lessonTitle.textContent = lesson.title;
+        lessonSummary.textContent = lesson.summary;
+        lessonWeakness.textContent = lesson.weakness;
+        lessonRisk.textContent = lesson.risk;
+        lessonSolution.textContent = lesson.solution;
+
+        if (page < LESSONS.length) {
+          lessonNext.hidden = false;
+          lessonComplete.hidden = true;
+          nextTitle.textContent = LESSONS[page].title;
+          lessonNext.href = `?lesson=${page + 1}`;
+          lessonNext.dataset.lesson = String(page + 1);
+        } else {
+          lessonNext.hidden = true;
+          lessonComplete.hidden = false;
+        }
+      }
+
+      function pushPage(page) {
+        const url = page ? `${location.pathname}?lesson=${page}` : location.pathname;
+        try {
+          history.pushState({ page }, "", url);
+        } catch (error) {
+          // The page can still be used when a browser blocks history updates.
+        }
+      }
+
+      function navigate(page, pushHistory = true) {
+        if (page >= 1 && page <= LESSONS.length) {
+          renderLesson(page);
+          homeView.hidden = true;
+          lessonView.hidden = false;
+        } else {
+          page = 0;
+          homeView.hidden = false;
+          lessonView.hidden = true;
+        }
+        updateNav(page);
+        if (pushHistory) pushPage(page);
+        window.scrollTo(0, 0);
+      }
+
+      document.querySelectorAll(".lesson-row").forEach((row) => {
+        row.addEventListener("click", (event) => {
+          event.preventDefault();
+          navigate(Number(row.dataset.lesson));
+        });
+      });
+
+      document.querySelectorAll(".nav-button[data-page]").forEach((button) => {
+        button.addEventListener("click", () => {
+          navigate(Number(button.dataset.page));
+        });
+      });
+
+      document.getElementById("back-home").addEventListener("click", (event) => {
+        event.preventDefault();
+        navigate(0);
+      });
+
+      lessonNext.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigate(Number(lessonNext.dataset.lesson));
+      });
+
+      window.addEventListener("popstate", () => {
+        const requested = Number(new URLSearchParams(location.search).get("lesson"));
+        navigate(requested >= 1 && requested <= LESSONS.length ? requested : 0, false);
+      });
+
+      const initialLesson = Number(
+        new URLSearchParams(location.search).get("lesson"),
+      );
+      navigate(
+        initialLesson >= 1 && initialLesson <= LESSONS.length ? initialLesson : 0,
+        false,
+      );
+
+      // Quick question ----------------------------------------------------
+      const feedback = document.getElementById("feedback");
+      const feedbackIcon = document.getElementById("feedback-icon");
+      const feedbackText = document.getElementById("feedback-text");
+
+      document.querySelectorAll(".choice").forEach((choice) => {
+        choice.addEventListener("click", () => {
+          document.querySelectorAll(".choice").forEach((other) => {
+            other.setAttribute("aria-pressed", "false");
+          });
+          choice.setAttribute("aria-pressed", "true");
+
+          const correct = choice.dataset.answer === "correct";
+          feedback.hidden = false;
+          feedback.classList.toggle("incorrect", !correct);
+          feedbackIcon.textContent = correct ? "✓" : "!";
+          feedbackText.textContent = correct
+            ? "That’s right. Working is not the same as secure. Patch it, test with sample claims, and keep a rollback plan."
+            : "Not quite. Legacy systems are a favourite target. Updates still matter even when the hardware keeps running.";
+        });
+      });
+
+      // Assistant ---------------------------------------------------------
+      const askButton = document.getElementById("ask-button");
+      const backdrop = document.getElementById("assistant-backdrop");
+      const assistantPanel = document.getElementById("assistant-panel");
+      const assistantClose = document.getElementById("assistant-close");
+      const messagesElement = document.getElementById("messages");
+      const suggestionsElement = document.getElementById("suggestions");
+      const composer = document.getElementById("composer");
+      const chatInput = document.getElementById("chat-input");
+      const sendButton = document.getElementById("send-button");
+
+      const SUGGESTIONS = [
+        "Summarize the attack in 150 words",
+        "Why does MFA matter?",
+        "How could this be prevented?",
+      ];
+
+      const chat = {
+        messages: [
+          {
+            role: "assistant",
+            text:
+              "Hi! I’m your study assistant for the Change Healthcare case study. Ask about the attack or the three lessons.",
+            intro: true,
+          },
+        ],
+        sending: false,
+        open: false,
+      };
+
+      function appendFormattedText(element, rawText, role) {
+        if (role === "user") {
+          element.textContent = rawText.trim();
+          return;
+        }
+
+        const text = rawText
+          .replace(/\*/g, "")
+          .replace(/^\s*[-*•]\s*/gm, "• ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+        const lines = text.split("\n");
+
+        lines.forEach((line, index) => {
+          const match = line.match(/^(•\s*|\d+\.\s*)([^:：\n]+[:：])(.*)$/);
+          if (match) {
+            element.append(document.createTextNode(match[1]));
+            const strong = document.createElement("strong");
+            strong.textContent = match[2];
+            element.append(strong);
+            element.append(document.createTextNode(match[3]));
+          } else {
+            element.append(document.createTextNode(line));
+          }
+          if (index < lines.length - 1) {
+            element.append(document.createElement("br"));
+          }
+        });
+      }
+
+      function scrollMessagesToBottom() {
+        messagesElement.scrollTop = messagesElement.scrollHeight;
+      }
+
+      function renderMessages() {
+        messagesElement.innerHTML = "";
+        chat.messages.forEach((message) => {
+          const bubble = document.createElement("div");
+          bubble.className = `bubble ${
+            message.role === "user" ? "user" : "assistant"
+          }`;
+          appendFormattedText(bubble, message.text, message.role);
+          messagesElement.append(bubble);
+        });
+
+        messagesElement.append(suggestionsElement);
+        suggestionsElement.innerHTML = "";
+        const showSuggestions = chat.messages.length === 1 && !chat.sending;
+        suggestionsElement.hidden = !showSuggestions;
+        if (showSuggestions) {
+          SUGGESTIONS.forEach((suggestion) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "suggestion";
+            button.textContent = suggestion;
+            button.addEventListener("click", () => sendMessage(suggestion));
+            suggestionsElement.append(button);
+          });
+        }
+
+        if (chat.sending) {
+          const thinking = document.createElement("div");
+          thinking.className = "thinking";
+          const spinner = document.createElement("span");
+          spinner.className = "spinner";
+          spinner.setAttribute("aria-hidden", "true");
+          const label = document.createElement("span");
+          label.textContent = "Thinking…";
+          thinking.append(spinner, label);
+          messagesElement.append(thinking);
+        }
+
+        sendButton.disabled = chat.sending;
+      }
+
+      function openAssistant() {
+        chat.open = true;
+        backdrop.hidden = false;
+        assistantPanel.hidden = false;
+        askButton.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden";
+        renderMessages();
+        scrollMessagesToBottom();
+        requestAnimationFrame(() => chatInput.focus());
+      }
+
+      function closeAssistant() {
+        chat.open = false;
+        backdrop.hidden = true;
+        assistantPanel.hidden = true;
+        askButton.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = "";
+        askButton.focus();
+      }
+
+      askButton.addEventListener("click", openAssistant);
+      assistantClose.addEventListener("click", closeAssistant);
+      backdrop.addEventListener("click", closeAssistant);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && chat.open) closeAssistant();
+      });
+
+      async function sendMessage(preset) {
+        const text = (preset ?? chatInput.value).trim();
+        if (!text || chat.sending) return;
+
+        chatInput.value = "";
+        chat.messages.push({ role: "user", text });
+        chat.sending = true;
+        renderMessages();
+        scrollMessagesToBottom();
+
+        try {
+          const history = chat.messages
+            .filter((message) => !message.intro)
+            .map((message) => ({
+              role: message.role,
+              content: message.text,
+            }));
+
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: history }),
+          });
+
+          if (!response.ok) {
+            if (response.status === 429) {
+              let message =
+                "Please slow down and wait a few seconds before asking again.";
+              try {
+                const data = await response.json();
+                if (data && typeof data.error === "string") {
+                  message = data.error;
+                }
+              } catch (error) {
+                // Use the default rate-limit message.
+              }
+              const rateLimitError = new Error(message);
+              rateLimitError.userMessage = true;
+              throw rateLimitError;
+            }
+            throw new Error(`Assistant returned ${response.status}`);
+          }
+
+          const data = await response.json();
+          const reply = data && typeof data.reply === "string" ? data.reply : "";
+          if (!reply.trim()) throw new Error("Assistant returned an empty reply");
+          chat.messages.push({ role: "assistant", text: reply.trim() });
+        } catch (error) {
+          chat.messages.push({
+            role: "assistant",
+            text: error.userMessage
+              ? error.message
+              : "Sorry, I can’t reach the study assistant right now. Please check your connection and try again.",
+          });
+        } finally {
+          chat.sending = false;
+          renderMessages();
+          scrollMessagesToBottom();
+        }
+      }
+
+      composer.addEventListener("submit", (event) => {
+        event.preventDefault();
+        sendMessage();
+      });
+    </script>
   </body>
 </html>
