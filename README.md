@@ -40,7 +40,7 @@ This study examines key architectural vulnerabilities, security risks, and pract
 - [`lib/main.dart`](lib/main.dart): The Flutter version of the case study.
 - [`api/chat.js`](api/chat.js): Vercel serverless function for the AI study assistant.
 - [`public/`](public/): The compiled Flutter web build deployed to Vercel.
-- [`tool/cache_bust_web.mjs`](tool/cache_bust_web.mjs): Adds a build version to the deployed entry assets so updated builds are not hidden by old browser caches.
+- [`tool/cache_bust_web.mjs`](tool/cache_bust_web.mjs): Versions the entry scripts, manifests, and font assets so updated builds are not hidden by old browser caches.
 - [`index.html`](index.html): Standalone static HTML version matching the Flutter design.
 - [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): An identical copy of the standalone HTML version.
 - [`assets/`](assets/): Font files and images for the Flutter app.

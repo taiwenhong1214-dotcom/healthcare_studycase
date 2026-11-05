@@ -842,7 +842,7 @@ var $async$WS=A.P(function(b,c){if(b===1)return A.L(c,r)
 for(;;)switch(s){case 0:m={}
 k=t.Lk
 s=3
-return A.Q(A.vy(a.uT("FontManifest.json")),$async$WS)
+return A.Q(A.vy(a.uT("FontManifest.json?v=58d48691dd3a962a60da5d2a9feb3cf1")),$async$WS)
 case 3:l=k.a(c)
 if(!l.gHb()){$.dl().$1("Font manifest does not exist at `"+l.a+"` - ignoring.")
 q=new A.xI(A.c([],t.z8))
@@ -18972,7 +18972,7 @@ a8e:function a8e(a,b,c){this.a=a
 this.b=b
 this.c=c},
 a8f:function a8f(a){this.a=a},
-aEG(a){return a.anD("AssetManifest.bin.json",new A.XR(),t.jo)},
+aEG(a){return a.anD("AssetManifest.bin.json?v=58d48691dd3a962a60da5d2a9feb3cf1",new A.XR(),t.jo)},
 XR:function XR(){},
 pY:function pY(a,b){this.a=a
 this.b=b},
