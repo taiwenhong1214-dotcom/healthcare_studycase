@@ -40,6 +40,7 @@ This study examines key architectural vulnerabilities, security risks, and pract
 - [`lib/main.dart`](lib/main.dart): The Flutter version of the case study.
 - [`api/chat.js`](api/chat.js): Vercel serverless function for the AI study assistant.
 - [`public/`](public/): The compiled Flutter web build deployed to Vercel.
+- [`tool/cache_bust_web.mjs`](tool/cache_bust_web.mjs): Adds a build version to the deployed entry assets so updated builds are not hidden by old browser caches.
 - [`index.html`](index.html): Standalone static HTML version matching the Flutter design.
 - [`Change_Healthcare_Security.html`](Change_Healthcare_Security.html): An identical copy of the standalone HTML version.
 - [`assets/`](assets/): Font files and images for the Flutter app.
@@ -95,7 +96,13 @@ flutter run -d chrome
 flutter build web --release --base-href /
 ```
 
-Copy the files from `build/web/` into `public/`, then push the repository. Vercel serves the `public/` folder at
+Copy the files from `build/web/` into `public/`, then version the entry assets so browsers that cached the previous build pick up the new one:
+
+```bash
+node tool/cache_bust_web.mjs
+```
+
+Then push the repository. Vercel serves the `public/` folder at
 [https://healthcare-studycase.space/](https://healthcare-studycase.space/).
 
 ---
