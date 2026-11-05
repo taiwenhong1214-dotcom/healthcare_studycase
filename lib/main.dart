@@ -532,64 +532,55 @@ class _AppShellState extends State<AppShell> {
       children: [
         // Welcome banner card
         Container(
-          padding: EdgeInsets.all(isMobile ? 20 : 26),
+          padding: EdgeInsets.all(isMobile ? 16 : 22),
           decoration: BoxDecoration(
             color: cardDark,
             border: Border.all(color: cardBorder),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x66000000),
-                offset: Offset(0, 6),
-                blurRadius: 20,
-              ),
-              BoxShadow(
-                color: Color(0x0D00E599),
-                offset: Offset(0, 0),
-                blurRadius: 24,
+                offset: Offset(0, 4),
+                blurRadius: 16,
               ),
             ],
           ),
           child: _buildWelcomeHeader(isMobile, titleSize),
         ),
-        const SizedBox(height: 22),
+        SizedBox(height: isMobile ? 12 : 16),
 
-        // Impact Metrics
+        // Impact Metrics Stat Bar (single compact row)
         _buildImpactMetrics(isMobile),
-        const SizedBox(height: 26),
+        SizedBox(height: isMobile ? 12 : 16),
 
-        // Interactive Kill Chain Roadmap HUD
-        _buildKillChainTracker(isMobile),
-        const SizedBox(height: 26),
+        // Unified Kill Chain & Lesson Vectors (single unified section, no duplicate lists)
+        _buildUnifiedKillChainOverview(isMobile),
+        SizedBox(height: isMobile ? 14 : 18),
 
-        // Core Lessons Overview
-        _buildLessonsOverview(isMobile),
-        const SizedBox(height: 28),
-
-        // The quick question is part of the home page too.
+        // Quick question
         const QuestionSection(),
-        const SizedBox(height: 32),
+        SizedBox(height: isMobile ? 16 : 22),
         const FooterSection(),
       ],
     );
   }
 
-  Widget _buildKillChainTracker(bool isMobile) {
+  Widget _buildUnifiedKillChainOverview(bool isMobile) {
     final mitigatedCount = _mitigatedPages.length;
     final total = lessons.length;
     final progress = total > 0 ? (mitigatedCount / total) : 0.0;
 
     return Container(
-      padding: EdgeInsets.all(isMobile ? 18 : 22),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: cardDark,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: cardBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x40000000),
-            offset: Offset(0, 6),
-            blurRadius: 18,
+            color: Color(0x33000000),
+            offset: Offset(0, 4),
+            blurRadius: 14,
           ),
         ],
       ),
@@ -604,7 +595,7 @@ class _AppShellState extends State<AppShell> {
             runSpacing: 6,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0x1F00E599),
                   borderRadius: BorderRadius.circular(8),
@@ -613,13 +604,13 @@ class _AppShellState extends State<AppShell> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.timeline_rounded, size: 13, color: cyberGreen),
+                    Icon(Icons.timeline_rounded, size: 12, color: cyberGreen),
                     SizedBox(width: 5),
                     Text(
                       'KILL CHAIN FORENSICS',
                       style: TextStyle(
                         fontFamily: 'Arimo',
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.6,
                         color: cyberGreen,
@@ -629,66 +620,64 @@ class _AppShellState extends State<AppShell> {
                 ),
               ),
               Text(
-                '${(progress * 100).toInt()}% Mitigated',
+                '${(progress * 100).toInt()}% Mitigated ($mitigatedCount/$total)',
                 style: const TextStyle(
                   fontFamily: 'Arimo',
-                  fontSize: 12,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.bold,
                   color: cyberGreen,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'Interactive Attack Path Analysis',
-            style: TextStyle(
-              fontFamily: 'Arimo',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.3,
-              color: textPrimary,
-            ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Text(
+                  'Key Vulnerabilities & Defenses',
+                  style: TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                    color: textPrimary,
+                  ),
+                ),
+              ),
+              if (!isMobile)
+                const Text(
+                  'Click to investigate vector',
+                  style: TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 11.5,
+                    color: textDim,
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Track how threat actors progressed through each stage of the breach. Select a vector to inspect forensic vulnerability details.',
-            style: TextStyle(
-              fontFamily: 'Arimo',
-              fontSize: 13,
-              height: 1.45,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
 
           // Progress Bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 6,
+              minHeight: 4,
               backgroundColor: const Color(0xFF16233B),
               valueColor: const AlwaysStoppedAnimation<Color>(cyberGreen),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
-          // Kill Chain Steps: 3 Stages
+          // Cards: high-density compact on mobile, side-by-side on desktop
           if (isMobile)
             Column(
               children: [
                 for (var i = 0; i < lessons.length; i++) ...[
-                  _buildKillChainStageCard(lessons[i], i + 1, isMobile),
-                  if (i < lessons.length - 1)
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      child: const Icon(
-                        Icons.arrow_downward_rounded,
-                        size: 16,
-                        color: Color(0xFF334155),
-                      ),
-                    ),
+                  _buildCompactLessonRow(lessons[i], i + 1),
+                  if (i < lessons.length - 1) const SizedBox(height: 7),
                 ],
               ],
             )
@@ -698,17 +687,9 @@ class _AppShellState extends State<AppShell> {
               children: [
                 for (var i = 0; i < lessons.length; i++) ...[
                   Expanded(
-                    child: _buildKillChainStageCard(lessons[i], i + 1, isMobile),
+                    child: _buildDesktopLessonCard(lessons[i], i + 1),
                   ),
-                  if (i < lessons.length - 1)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 38),
-                      child: const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 18,
-                        color: Color(0xFF334155),
-                      ),
-                    ),
+                  if (i < lessons.length - 1) const SizedBox(width: 12),
                 ],
               ],
             ),
@@ -717,7 +698,121 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Widget _buildKillChainStageCard(Lesson lesson, int page, bool isMobile) {
+  Widget _buildCompactLessonRow(Lesson lesson, int page) {
+    final isMitigated = _mitigatedPages.contains(page);
+    final (severityColor, severityBg) = switch (lesson.number) {
+      '01' => (threatRed, threatRedBg),
+      '02' => (threatAmber, threatAmberBg),
+      _ => (cyberBlue, cyberBlueBg),
+    };
+
+    return Material(
+      color: const Color(0xFF0F1728),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () => _goTo(page),
+        borderRadius: BorderRadius.circular(12),
+        hoverColor: const Color(0x1F00E599),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isMitigated ? cyberGreenBorder : const Color(0xFF1E2D44),
+              width: isMitigated ? 1.2 : 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isMitigated ? cyberGreenDim : const Color(0xFF16233B),
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(
+                    color: isMitigated ? cyberGreenBorder : cardBorder,
+                  ),
+                ),
+                child: Text(
+                  lesson.number,
+                  style: TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: isMitigated ? cyberGreen : textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            lesson.title,
+                            style: const TextStyle(
+                              fontFamily: 'Arimo',
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: severityBg,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            lesson.stageName.toUpperCase(),
+                            style: TextStyle(
+                              fontFamily: 'Arimo',
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                              color: severityColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      lesson.tacticDescription,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 11,
+                        height: 1.3,
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                isMitigated ? Icons.check_circle_rounded : Icons.arrow_forward_ios_rounded,
+                size: isMitigated ? 15 : 12,
+                color: isMitigated ? cyberGreen : textDim,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLessonCard(Lesson lesson, int page) {
     final isMitigated = _mitigatedPages.contains(page);
     final (severityColor, severityBg) = switch (lesson.number) {
       '01' => (threatRed, threatRedBg),
@@ -737,45 +832,28 @@ class _AppShellState extends State<AppShell> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isMitigated
-                  ? cyberGreenBorder
-                  : const Color(0xFF1E2D44),
-              width: isMitigated ? 1.4 : 1.0,
+              color: isMitigated ? cyberGreenBorder : const Color(0xFF1E2D44),
+              width: isMitigated ? 1.2 : 1.0,
             ),
-            boxShadow: isMitigated
-                ? const [
-                    BoxShadow(
-                      color: Color(0x1A00E599),
-                      blurRadius: 10,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 6,
-                runSpacing: 4,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                     decoration: BoxDecoration(
                       color: severityBg,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: severityColor.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       lesson.stageName.toUpperCase(),
                       style: TextStyle(
                         fontFamily: 'Arimo',
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
                         color: severityColor,
                       ),
                     ),
@@ -784,45 +862,21 @@ class _AppShellState extends State<AppShell> {
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: isMitigated ? cyberGreenDim : const Color(0xFF16233B),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: isMitigated ? cyberGreenBorder : cardBorder,
-                      ),
+                      borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isMitigated ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                          size: 11,
-                          color: isMitigated ? cyberGreen : textDim,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          isMitigated ? 'MITIGATED' : 'ACTIVE',
-                          style: TextStyle(
-                            fontFamily: 'Arimo',
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.bold,
-                            color: isMitigated ? cyberGreen : textDim,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      isMitigated ? 'MITIGATED ✓' : 'ACTIVE ⚠️',
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: isMitigated ? cyberGreen : textDim,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
-              Text(
-                lesson.killChainPhase,
-                style: const TextStyle(
-                  fontFamily: 'Arimo',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: textDim,
-                ),
-              ),
-              const SizedBox(height: 2),
               Row(
                 children: [
                   Icon(lesson.icon, size: 16, color: isMitigated ? cyberGreen : textPrimary),
@@ -849,7 +903,7 @@ class _AppShellState extends State<AppShell> {
                 style: const TextStyle(
                   fontFamily: 'Arimo',
                   fontSize: 12,
-                  height: 1.4,
+                  height: 1.35,
                   color: textSecondary,
                 ),
               ),
@@ -857,7 +911,7 @@ class _AppShellState extends State<AppShell> {
               Row(
                 children: [
                   Text(
-                    isMitigated ? 'Review forensic data' : 'Investigate vector',
+                    isMitigated ? 'Review forensics' : 'Investigate vector',
                     style: TextStyle(
                       fontFamily: 'Arimo',
                       fontSize: 11.5,
@@ -884,317 +938,106 @@ class _AppShellState extends State<AppShell> {
     final metrics = [
       (
         '1/3',
-        'US Patients Affected',
-        'Nationwide claims & prescriptions stalled',
+        'US Patients',
+        'Claims & scripts stalled',
         Icons.local_hospital_outlined,
         cyberGreen,
-        const Color(0x1A00E599),
       ),
       (
         r'$22M+',
         'Ransom Extorted',
-        'Total remediation costs exceeded \$2B',
+        'Total cost over \$2B',
         Icons.payments_outlined,
         threatAmber,
-        const Color(0x1AFBBF24),
       ),
       (
         '100M+',
-        'Records Compromised',
-        'Largest healthcare data breach in history',
+        'Records Breached',
+        'Largest in US history',
         Icons.security_outlined,
         threatRed,
-        const Color(0x1AFF4D4F),
       ),
     ];
 
-    final cards = metrics.map((m) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        decoration: BoxDecoration(
-          color: cardDark,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorder),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x4D000000),
-              offset: Offset(0, 4),
-              blurRadius: 12,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  m.$1,
-                  style: TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.8,
-                    height: 1.1,
-                    color: m.$5,
-                    shadows: [
-                      Shadow(color: m.$5.withValues(alpha: 0.35), blurRadius: 12),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: m.$6,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: m.$5.withValues(alpha: 0.3)),
-                  ),
-                  child: Icon(m.$4, size: 18, color: m.$5),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              m.$2,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.bold,
-                height: 1.25,
-                color: textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              m.$3,
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.35,
-                color: textSecondary,
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
-
-    if (isMobile) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 20,
+        vertical: isMobile ? 10 : 14,
+      ),
+      decoration: BoxDecoration(
+        color: cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cardBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            offset: Offset(0, 3),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Row(
         children: [
-          for (var i = 0; i < cards.length; i++) ...[
-            cards[i],
-            if (i < cards.length - 1) const SizedBox(height: 12),
-          ],
-        ],
-      );
-    }
-
-    return Row(
-      children: [
-        for (var i = 0; i < cards.length; i++) ...[
-          Expanded(child: cards[i]),
-          if (i < cards.length - 1) const SizedBox(width: 14),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildLessonsOverview(bool isMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0x2600E599),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0x4D00E599)),
-              ),
-              child: const Row(
+          for (var i = 0; i < metrics.length; i++) ...[
+            Expanded(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.radar_rounded, size: 12, color: cyberGreen),
-                  SizedBox(width: 5),
-                  Text(
-                    'THREAT INTELLIGENCE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
-                      color: cyberGreen,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Key Vulnerabilities & Defenses',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.3,
-                color: textPrimary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Select any lesson below to explore the incident breakdown and mitigation advice.',
-          style: TextStyle(fontSize: 13.5, color: textSecondary, height: 1.4),
-        ),
-        const SizedBox(height: 16),
-        if (isMobile)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < lessons.length; i++) ...[
-                _buildLessonOverviewCard(lessons[i], i + 1),
-                if (i < lessons.length - 1) const SizedBox(height: 14),
-              ],
-            ],
-          )
-        else
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = 0; i < lessons.length; i++) ...[
-                Expanded(child: _buildLessonOverviewCard(lessons[i], i + 1)),
-                if (i < lessons.length - 1) const SizedBox(width: 14),
-              ],
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _buildLessonOverviewCard(Lesson lesson, int page) {
-    final (severityLabel, severityColor, severityBg) = switch (lesson.number) {
-      '01' => ('CRITICAL VECTOR', threatRed, threatRedBg),
-      '02' => ('KNOWN EXPLOIT', threatAmber, threatAmberBg),
-      _ => ('LATERAL SPREAD', cyberBlue, cyberBlueBg),
-    };
-
-    return Material(
-      color: cardDark,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
-      child: InkWell(
-        onTap: () => _goTo(page),
-        borderRadius: BorderRadius.circular(16),
-        hoverColor: const Color(0x1400E599),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: cardBorder),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x40000000),
-                offset: Offset(0, 4),
-                blurRadius: 14,
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF16233B),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFF263B60)),
-                    ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
                     child: Text(
-                      lesson.number,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: cyberGreen,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: severityBg,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: severityColor.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      severityLabel,
+                      metrics[i].$1,
                       style: TextStyle(
-                        fontSize: 9.5,
+                        fontFamily: 'Arimo',
+                        fontSize: isMobile ? 19 : 24,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        color: severityColor,
+                        letterSpacing: -0.6,
+                        height: 1.1,
+                        color: metrics[i].$5,
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Icon(lesson.icon, size: 16, color: cyberGreen),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      lesson.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.2,
-                        color: textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                lesson.weakness,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  height: 1.45,
-                  color: textSecondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
+                  const SizedBox(height: 3),
                   Text(
-                    'Study lesson',
+                    metrics[i].$2,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontFamily: 'Arimo',
+                      fontSize: isMobile ? 11 : 12.5,
                       fontWeight: FontWeight.bold,
-                      color: cyberGreen,
+                      height: 1.2,
+                      color: textPrimary,
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_rounded, size: 14, color: cyberGreen),
+                  if (!isMobile) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      metrics[i].$3,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 11,
+                        height: 1.2,
+                        color: textDim,
+                      ),
+                    ),
+                  ],
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+            if (i < metrics.length - 1)
+              Container(
+                height: isMobile ? 28 : 40,
+                width: 1,
+                color: const Color(0xFF1E293B),
+                margin: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 12),
+              ),
+          ],
+        ],
       ),
     );
   }
@@ -1618,33 +1461,33 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: isMobile ? 10 : 14),
         Text(
           'Change Healthcare\nRansomware Attack (2024)',
           textAlign: isMobile ? TextAlign.center : TextAlign.left,
           style: TextStyle(
-            fontSize: titleSize,
+            fontSize: isMobile ? 22.0 : titleSize,
             height: 1.15,
-            letterSpacing: -1.2,
+            letterSpacing: -1.0,
             fontWeight: FontWeight.w800,
             color: textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isMobile ? 8 : 12),
         Text(
           'Attackers used stolen login details to enter a system without MFA. '
           'The attack disrupted healthcare claims and payments.',
           textAlign: isMobile ? TextAlign.center : TextAlign.left,
-          style: const TextStyle(
-            fontSize: 15,
-            height: 1.55,
+          style: TextStyle(
+            fontSize: isMobile ? 13.5 : 15.0,
+            height: 1.45,
             color: textSecondary,
           ),
         ),
       ],
     );
 
-    final gifWidth = isMobile ? 180.0 : 210.0;
+    final gifWidth = isMobile ? 130.0 : 210.0;
     final gif = Semantics(
       image: true,
       label: 'Laptop hacking animation',
@@ -1743,7 +1586,7 @@ class _AppShellState extends State<AppShell> {
             constraints: const BoxConstraints(maxWidth: 580),
             child: headerText,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           gif,
         ],
       );
