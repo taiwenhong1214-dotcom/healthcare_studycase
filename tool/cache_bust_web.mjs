@@ -23,6 +23,7 @@ const canonicalMainJs = mainJs.replace(
 );
 const version = createHash('sha256')
   .update(buildId)
+  .update('cache-bust-v2')
   .update(canonicalMainJs)
   .digest('hex')
   .slice(0, 32);
@@ -51,17 +52,20 @@ bootstrap = bootstrap.replace(
 );
 writeFileSync(bootstrapPath, bootstrap);
 
-// The Flutter engine requests these manifests by fixed names. Version the
-// requests inside main.dart.js so a previously cached manifest is bypassed.
-const manifestNames =
-  /"(?:FontManifest\.json|AssetManifest\.bin\.json)(?:\?v=[^"]*)?"/;
-if (!manifestNames.test(mainJs)) {
-  throw new Error('Could not find manifest references in main.dart.js');
+// The Flutter engine requests FontManifest.json by a fixed name. Version that
+// request inside main.dart.js so a previously cached manifest is bypassed.
+// AssetManifest is left alone: its loader URL-encodes the whole path, which
+// would turn a query string into part of the filename.
+const manifestName = /"FontManifest\.json(?:\?v=[^"]*)?"/;
+if (!manifestName.test(mainJs)) {
+  throw new Error('Could not find FontManifest.json in main.dart.js');
 }
-mainJs = mainJs.replace(
-  /"(FontManifest\.json|AssetManifest\.bin\.json)(?:\?v=[^"]*)?"/g,
-  (_, name) => `"${name}?v=${version}"`,
-);
+mainJs = mainJs
+  .replace(
+    /"FontManifest\.json(?:\?v=[^"]*)?"/g,
+    `"FontManifest.json?v=${version}"`,
+  )
+  .replace(/"AssetManifest\.bin\.json(?:\?v=[^"]*)?"/g, '"AssetManifest.bin.json"');
 writeFileSync(mainPath, mainJs);
 
 // Fonts were also cached as immutable. Give each font a content-hashed URL
