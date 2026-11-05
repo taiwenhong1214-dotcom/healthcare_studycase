@@ -6,20 +6,64 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-// Flutter version of the original HTML case study.
-// The colours, spacing and font sizes below come straight from the HTML/CSS.
+// Cyber Sentinel Dark Edition - Change Healthcare Security Case Study
 
-const bgColor = Color(0xFFF5F7F4);
-const textColor = Color(0xFF263F39);
-const mutedTextColor = Color(0xFF61716A);
-const tagBgColor = Color(0xFFDFEAD9);
-const tagTextColor = Color(0xFF34573A);
-const borderColor = Color(0xFFDFE5DD);
-const numberBgColor = Color(0xFFE5EFDF);
-const dividerColor = Color(0xFFE6EBE3);
-const questionBgColor = Color(0xFFE6EEDF);
-const footerTextColor = Color(0xFF68766D);
-const linkColor = Color(0xFF3D624B);
+// Obsidian Cyber Palette
+const bgDark = Color(0xFF090D16); // Deep space obsidian
+const surfaceDark = Color(0xFF0F172A); // Elevated cyber slate
+const cardDark = Color(0xFF131D30); // Incident card slate
+const cardBorder = Color(0xFF1E293B); // High-tech subtle border
+const cardBorderGlow = Color(0xFF2C3E55);
+
+// Neon Cyber Accents
+const cyberGreen = Color(0xFF00E599); // Neon terminal emerald
+const cyberGreenDim = Color(0xFF03261C);
+const cyberGreenBorder = Color(0xFF054D38);
+
+const textPrimary = Color(0xFFF8FAFC); // Clean crisp white-slate
+const textSecondary = Color(0xFF94A3B8); // Muted slate
+const textDim = Color(0xFF64748B);
+
+// Threat Severity Colors
+const threatRed = Color(0xFFFF4D4F); // Ransomware / Incident red
+const threatRedBg = Color(0xFF220D12);
+const threatRedBorder = Color(0xFF4C161E);
+
+const threatAmber = Color(0xFFFBBF24); // Warning / Vulnerability
+const threatAmberBg = Color(0xFF24190B);
+const threatAmberBorder = Color(0xFF4A3412);
+
+const cyberBlue = Color(0xFF38BDF8); // Protocol / Analysis blue
+const cyberBlueBg = Color(0xFF0A2234);
+const cyberBlueBorder = Color(0xFF13455E);
+
+// Compatibility aliases
+const bgColor = bgDark;
+const primaryColor = cyberGreen;
+const textColor = textPrimary;
+const mutedTextColor = textSecondary;
+const tagBgColor = cyberGreenDim;
+const tagTextColor = cyberGreen;
+const borderColor = cardBorder;
+const subtleBorderColor = Color(0xFF192438);
+const numberBgColor = Color(0xFF16233B);
+const dividerColor = Color(0xFF1E293B);
+const questionBgColor = Color(0xFF0D1B2A);
+const footerTextColor = textDim;
+const linkColor = cyberGreen;
+
+// Semantic tags for Security Breakdown
+const weaknessBgColor = threatAmberBg;
+const weaknessBorderColor = threatAmberBorder;
+const weaknessTextColor = threatAmber;
+
+const riskBgColor = threatRedBg;
+const riskBorderColor = threatRedBorder;
+const riskTextColor = threatRed;
+
+const solutionBgColor = cyberGreenDim;
+const solutionBorderColor = cyberGreenBorder;
+const solutionTextColor = cyberGreen;
 
 class Lesson {
   const Lesson({
@@ -31,6 +75,10 @@ class Lesson {
     required this.weakness,
     required this.risk,
     required this.solution,
+    required this.stageName,
+    required this.killChainPhase,
+    required this.tacticDescription,
+    required this.nextPhasePreview,
   });
 
   final String number;
@@ -41,6 +89,10 @@ class Lesson {
   final String weakness;
   final String risk;
   final String solution;
+  final String stageName;
+  final String killChainPhase;
+  final String tacticDescription;
+  final String nextPhasePreview;
 }
 
 const lessons = [
@@ -49,30 +101,48 @@ const lessons = [
     title: 'Missing MFA',
     navLabel: 'MFA',
     sectionLabel: 'First vulnerability',
-    icon: Icons.smartphone,
-    weakness: '',
-    risk: '',
-    solution: '',
+    icon: Icons.smartphone_rounded,
+    weakness: 'The affected remote-access portal only required login details.',
+    risk: 'A stolen password could let an attacker enter.',
+    solution: 'Require MFA, such as a password plus a security key.',
+    stageName: 'Stage 01',
+    killChainPhase: 'Initial Infiltration',
+    tacticDescription:
+        'Attackers used compromised credentials against a single-factor Citrix portal.',
+    nextPhasePreview:
+        'Stage 02: Weaponization & Exploiting Unpatched Edge Gateways',
   ),
   Lesson(
     number: '02',
     title: 'Outdated Systems',
     navLabel: 'Updates',
     sectionLabel: 'Second vulnerability',
-    icon: Icons.dns,
+    icon: Icons.dns_rounded,
     weakness: 'Old, unsupported software may stop receiving security updates.',
     risk: 'Attackers could exploit known security flaws.',
     solution: 'Test and install updates. Replace unsupported systems.',
+    stageName: 'Stage 02',
+    killChainPhase: 'Weaponization & Foothold',
+    tacticDescription:
+        'Once inside, attackers leveraged known vulnerabilities in unpatched legacy servers.',
+    nextPhasePreview:
+        'Stage 03: Lateral Movement Across Flat Internal Network',
   ),
   Lesson(
     number: '03',
     title: 'Poor Network Separation',
     navLabel: 'Network',
     sectionLabel: 'Third vulnerability',
-    icon: Icons.hub,
-    weakness: '',
-    risk: '',
-    solution: '',
+    icon: Icons.hub_rounded,
+    weakness: 'Unnecessary connections can let attackers reach other systems.',
+    risk: 'One infected device could lead to a wider outage.',
+    solution: 'Separate important systems and allow only necessary access.',
+    stageName: 'Stage 03',
+    killChainPhase: 'Lateral Expansion & Impact',
+    tacticDescription:
+        'Due to flat network topology, ransomware spread unhindered into payment processors.',
+    nextPhasePreview:
+        'Forensics Complete: Proceed to Incident Defense Assessment',
   ),
 ];
 
@@ -91,8 +161,13 @@ class MyApp extends StatelessWidget {
       title: 'Change Healthcare • Security Lessons',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        brightness: Brightness.dark,
         fontFamily: 'Arimo',
-        scaffoldBackgroundColor: bgColor,
+        scaffoldBackgroundColor: bgDark,
+        colorScheme: const ColorScheme.dark(
+          primary: cyberGreen,
+          surface: surfaceDark,
+        ),
         splashFactory: NoSplash.splashFactory,
       ),
       home: AppShell(chatSession: chatSession),
@@ -115,6 +190,7 @@ class _AppShellState extends State<AppShell> {
   final ScrollController _scrollController = ScrollController();
   late final ChatSession _chatSession;
   late final bool _ownsChatSession;
+  final Set<int> _mitigatedPages = <int>{};
 
   @override
   void initState() {
@@ -131,6 +207,9 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _goTo(int page) {
+    if (page > 0) {
+      _mitigatedPages.add(page);
+    }
     if (page == _selectedPage) {
       _scrollToTop();
       return;
@@ -186,7 +265,20 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildNavBar(),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDockStatusPill(),
+              const SizedBox(height: 6),
+              _buildFloatingDock(),
+            ],
+          ),
+        ),
+      ),
       floatingActionButton: _buildAssistantButton(),
     );
   }
@@ -200,7 +292,7 @@ class _AppShellState extends State<AppShell> {
         isDismissible: true,
         enableDrag: true,
         backgroundColor: Colors.transparent,
-        barrierColor: const Color.fromRGBO(38, 63, 57, 0.35),
+        barrierColor: const Color.fromRGBO(0, 0, 0, 0.7),
         builder: (context) => StudyAssistantSheet(session: _chatSession),
       );
       return;
@@ -209,66 +301,143 @@ class _AppShellState extends State<AppShell> {
     showDialog<void>(
       context: context,
       barrierDismissible: true,
+      barrierColor: const Color.fromRGBO(0, 0, 0, 0.7),
       builder: (context) =>
           StudyAssistantSheet(session: _chatSession, isDialog: true),
     );
   }
 
   Widget _buildAssistantButton() {
-    return FloatingActionButton(
-      onPressed: _openAssistant,
-      tooltip: 'Ask the study assistant',
-      backgroundColor: textColor,
-      foregroundColor: Colors.white,
-      elevation: 4,
-      highlightElevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: const Icon(Icons.smart_toy, size: 27),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x6600E599),
+            blurRadius: 18,
+            spreadRadius: -2,
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: _openAssistant,
+        tooltip: 'Ask the study assistant',
+        backgroundColor: surfaceDark,
+        foregroundColor: cyberGreen,
+        elevation: 6,
+        highlightElevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Color(0xFF00E599), width: 1.4),
+        ),
+        child: const Icon(Icons.smart_toy_rounded, size: 26),
+      ),
     );
   }
 
-  Widget _buildNavBar() {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: bgColor,
-        border: Border(top: BorderSide(color: borderColor)),
+  Widget _buildDockStatusPill() {
+    final mitigatedCount = _mitigatedPages.length;
+    final total = lessons.length;
+    final isAllMitigated = mitigatedCount == total;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xE60A101D),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isAllMitigated ? cyberGreenBorder : const Color(0xFF1E2D44),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Center(
-          // The bottomNavigationBar slot passes loose height constraints,
-          // so Center must shrink-wrap the 64px tab row.
-          heightFactor: 1,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _navButton(0, 'Home', 'Home', Icons.home_rounded),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: isAllMitigated ? cyberGreen : threatAmber,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: isAllMitigated ? cyberGreen : threatAmber,
+                    blurRadius: 6,
                   ),
-                  for (var i = 0; i < lessons.length; i++)
-                    Expanded(
-                      child: _navButton(
-                        i + 1,
-                        lessons[i].navLabel,
-                        lessons[i].title,
-                        lessons[i].icon,
-                      ),
-                    ),
                 ],
               ),
             ),
-          ),
+            const SizedBox(width: 7),
+            Text(
+              isAllMitigated
+                  ? 'FORENSICS COMPLETE · ALL 3 VECTORS MITIGATED'
+                  : 'KILL CHAIN FORENSICS · $mitigatedCount/$total VECTORS ANALYZED',
+              style: TextStyle(
+                fontFamily: 'Arimo',
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.6,
+                color: isAllMitigated ? cyberGreen : textSecondary,
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingDock() {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 480),
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xF20F172A),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFF243349), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x99000000),
+            blurRadius: 24,
+            offset: Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Color(0x1F00E599),
+            blurRadius: 16,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: _navButton(0, 'Home', 'Home', Icons.home_rounded),
+          ),
+          for (var i = 0; i < lessons.length; i++)
+            Expanded(
+              child: _navButton(
+                i + 1,
+                lessons[i].navLabel,
+                lessons[i].title,
+                lessons[i].icon,
+              ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _navButton(int page, String label, String tooltip, IconData icon) {
     final selected = _selectedPage == page;
-    final color = selected ? textColor : footerTextColor;
+    final isMitigated = page > 0 && _mitigatedPages.contains(page);
     return Semantics(
       selected: selected,
       button: true,
@@ -277,42 +446,80 @@ class _AppShellState extends State<AppShell> {
         child: TextButton(
           onPressed: () => _goTo(page),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: EdgeInsets.zero,
             minimumSize: const Size(0, 48),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            foregroundColor: color,
-            overlayColor: selected
-                ? const Color.fromRGBO(38, 63, 57, 0.06)
-                : const Color.fromRGBO(38, 63, 57, 0.04),
-            shape: const RoundedRectangleBorder(),
+            foregroundColor: selected ? cyberGreen : textSecondary,
+            overlayColor: const Color(0x1A00E599),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
             textStyle: const TextStyle(
               fontFamily: 'Arimo',
               height: 1.2,
               letterSpacing: 0,
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: selected ? tagTextColor : footerTextColor,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0x2E00E599) : Colors.transparent,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: selected ? const Color(0x4D00E599) : Colors.transparent,
               ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  height: 1.2,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                  color: color,
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 20,
+                      color: selected
+                          ? cyberGreen
+                          : (isMitigated ? const Color(0xFF6EE7B7) : textDim),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 11,
+                        height: 1.2,
+                        fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                        color: selected
+                            ? cyberGreen
+                            : (isMitigated ? textPrimary : textSecondary),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                if (isMitigated)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: cyberGreen,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: cyberGreen, blurRadius: 4),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -325,56 +532,944 @@ class _AppShellState extends State<AppShell> {
       children: [
         // Welcome banner card
         Container(
-          padding: EdgeInsets.all(isMobile ? 20 : 23),
+          padding: EdgeInsets.all(isMobile ? 20 : 26),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(14),
+            color: cardDark,
+            border: Border.all(color: cardBorder),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66000000),
+                offset: Offset(0, 6),
+                blurRadius: 20,
+              ),
+              BoxShadow(
+                color: Color(0x0D00E599),
+                offset: Offset(0, 0),
+                blurRadius: 24,
+              ),
+            ],
           ),
           child: _buildWelcomeHeader(isMobile, titleSize),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 22),
+
+        // Impact Metrics
+        _buildImpactMetrics(isMobile),
+        const SizedBox(height: 26),
+
+        // Interactive Kill Chain Roadmap HUD
+        _buildKillChainTracker(isMobile),
+        const SizedBox(height: 26),
+
+        // Core Lessons Overview
+        _buildLessonsOverview(isMobile),
+        const SizedBox(height: 28),
 
         // The quick question is part of the home page too.
         const QuestionSection(),
-        const SizedBox(height: 25),
+        const SizedBox(height: 32),
         const FooterSection(),
       ],
     );
   }
 
-  Widget _buildLessonPage(bool isMobile) {
-    final lesson = lessons[_selectedPage - 1];
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680),
+  Widget _buildKillChainTracker(bool isMobile) {
+    final mitigatedCount = _mitigatedPages.length;
+    final total = lessons.length;
+    final progress = total > 0 ? (mitigatedCount / total) : 0.0;
+
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 18 : 22),
+      decoration: BoxDecoration(
+        color: cardDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cardBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 6),
+            blurRadius: 18,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0x1F00E599),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0x4D00E599)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.timeline_rounded, size: 13, color: cyberGreen),
+                    SizedBox(width: 5),
+                    Text(
+                      'KILL CHAIN FORENSICS',
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.6,
+                        color: cyberGreen,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}% Mitigated',
+                style: const TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: cyberGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Interactive Attack Path Analysis',
+            style: TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -0.3,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Track how threat actors progressed through each stage of the breach. Select a vector to inspect forensic vulnerability details.',
+            style: TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 13,
+              height: 1.45,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: const Color(0xFF16233B),
+              valueColor: const AlwaysStoppedAnimation<Color>(cyberGreen),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Kill Chain Steps: 3 Stages
+          if (isMobile)
+            Column(
+              children: [
+                for (var i = 0; i < lessons.length; i++) ...[
+                  _buildKillChainStageCard(lessons[i], i + 1, isMobile),
+                  if (i < lessons.length - 1)
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: const Icon(
+                        Icons.arrow_downward_rounded,
+                        size: 16,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                ],
+              ],
+            )
+          else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < lessons.length; i++) ...[
+                  Expanded(
+                    child: _buildKillChainStageCard(lessons[i], i + 1, isMobile),
+                  ),
+                  if (i < lessons.length - 1)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 38),
+                      child: const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 18,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                ],
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKillChainStageCard(Lesson lesson, int page, bool isMobile) {
+    final isMitigated = _mitigatedPages.contains(page);
+    final (severityColor, severityBg) = switch (lesson.number) {
+      '01' => (threatRed, threatRedBg),
+      '02' => (threatAmber, threatAmberBg),
+      _ => (cyberBlue, cyberBlueBg),
+    };
+
+    return Material(
+      color: const Color(0xFF0F1728),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => _goTo(page),
+        borderRadius: BorderRadius.circular(14),
+        hoverColor: const Color(0x1F00E599),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isMitigated
+                  ? cyberGreenBorder
+                  : const Color(0xFF1E2D44),
+              width: isMitigated ? 1.4 : 1.0,
+            ),
+            boxShadow: isMitigated
+                ? const [
+                    BoxShadow(
+                      color: Color(0x1A00E599),
+                      blurRadius: 10,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: severityBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: severityColor.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      lesson.stageName.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        color: severityColor,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isMitigated ? cyberGreenDim : const Color(0xFF16233B),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isMitigated ? cyberGreenBorder : cardBorder,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isMitigated ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                          size: 11,
+                          color: isMitigated ? cyberGreen : textDim,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isMitigated ? 'MITIGATED' : 'ACTIVE',
+                          style: TextStyle(
+                            fontFamily: 'Arimo',
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: isMitigated ? cyberGreen : textDim,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                lesson.killChainPhase,
+                style: const TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: textDim,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Icon(lesson.icon, size: 16, color: isMitigated ? cyberGreen : textPrimary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      lesson.title,
+                      style: const TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                lesson.tacticDescription,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 12,
+                  height: 1.4,
+                  color: textSecondary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Text(
+                    isMitigated ? 'Review forensic data' : 'Investigate vector',
+                    style: TextStyle(
+                      fontFamily: 'Arimo',
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: isMitigated ? cyberGreen : const Color(0xFF60A5FA),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 13,
+                    color: isMitigated ? cyberGreen : const Color(0xFF60A5FA),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImpactMetrics(bool isMobile) {
+    final metrics = [
+      (
+        '1/3',
+        'US Patients Affected',
+        'Nationwide claims & prescriptions stalled',
+        Icons.local_hospital_outlined,
+        cyberGreen,
+        const Color(0x1A00E599),
+      ),
+      (
+        r'$22M+',
+        'Ransom Extorted',
+        'Total remediation costs exceeded \$2B',
+        Icons.payments_outlined,
+        threatAmber,
+        const Color(0x1AFBBF24),
+      ),
+      (
+        '100M+',
+        'Records Compromised',
+        'Largest healthcare data breach in history',
+        Icons.security_outlined,
+        threatRed,
+        const Color(0x1AFF4D4F),
+      ),
+    ];
+
+    final cards = metrics.map((m) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: cardDark,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cardBorder),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x4D000000),
+              offset: Offset(0, 4),
+              blurRadius: 12,
+            ),
+          ],
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => _goTo(0),
-                icon: const Icon(Icons.arrow_back, size: 17),
-                label: const Text('Back to home'),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  foregroundColor: linkColor,
-                  overlayColor: Colors.transparent,
-                  splashFactory: NoSplash.splashFactory,
-                  textStyle: const TextStyle(
-                    fontFamily: 'Arimo',
-                    fontSize: 13,
-                    height: 1.6,
-                    letterSpacing: 0,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  m.$1,
+                  style: TextStyle(
+                    fontSize: 27,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: -0.8,
+                    height: 1.1,
+                    color: m.$5,
+                    shadows: [
+                      Shadow(color: m.$5.withValues(alpha: 0.35), blurRadius: 12),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: m.$6,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: m.$5.withValues(alpha: 0.3)),
+                  ),
+                  child: Icon(m.$4, size: 18, color: m.$5),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              m.$2,
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                height: 1.25,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              m.$3,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < cards.length; i++) ...[
+            cards[i],
+            if (i < cards.length - 1) const SizedBox(height: 12),
+          ],
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        for (var i = 0; i < cards.length; i++) ...[
+          Expanded(child: cards[i]),
+          if (i < cards.length - 1) const SizedBox(width: 14),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLessonsOverview(bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0x2600E599),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0x4D00E599)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.radar_rounded, size: 12, color: cyberGreen),
+                  SizedBox(width: 5),
+                  Text(
+                    'THREAT INTELLIGENCE',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                      color: cyberGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Key Vulnerabilities & Defenses',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.3,
+                color: textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Select any lesson below to explore the incident breakdown and mitigation advice.',
+          style: TextStyle(fontSize: 13.5, color: textSecondary, height: 1.4),
+        ),
+        const SizedBox(height: 16),
+        if (isMobile)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < lessons.length; i++) ...[
+                _buildLessonOverviewCard(lessons[i], i + 1),
+                if (i < lessons.length - 1) const SizedBox(height: 14),
+              ],
+            ],
+          )
+        else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < lessons.length; i++) ...[
+                Expanded(child: _buildLessonOverviewCard(lessons[i], i + 1)),
+                if (i < lessons.length - 1) const SizedBox(width: 14),
+              ],
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildLessonOverviewCard(Lesson lesson, int page) {
+    final (severityLabel, severityColor, severityBg) = switch (lesson.number) {
+      '01' => ('CRITICAL VECTOR', threatRed, threatRedBg),
+      '02' => ('KNOWN EXPLOIT', threatAmber, threatAmberBg),
+      _ => ('LATERAL SPREAD', cyberBlue, cyberBlueBg),
+    };
+
+    return Material(
+      color: cardDark,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 0,
+      child: InkWell(
+        onTap: () => _goTo(page),
+        borderRadius: BorderRadius.circular(16),
+        hoverColor: const Color(0x1400E599),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cardBorder),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x40000000),
+                offset: Offset(0, 4),
+                blurRadius: 14,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF16233B),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF263B60)),
+                    ),
+                    child: Text(
+                      lesson.number,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: cyberGreen,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: severityBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: severityColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      severityLabel,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        color: severityColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Icon(lesson.icon, size: 16, color: cyberGreen),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      lesson.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
+                        color: textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                lesson.weakness,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  height: 1.45,
+                  color: textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Text(
+                    'Study lesson',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: cyberGreen,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_rounded, size: 14, color: cyberGreen),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLessonKillChainStepper() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1728),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cardBorder),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < lessons.length; i++) ...[
+              InkWell(
+                onTap: () => _goTo(i + 1),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _selectedPage == (i + 1)
+                              ? cyberGreen
+                              : (_mitigatedPages.contains(i + 1)
+                                  ? cyberGreenDim
+                                  : const Color(0xFF16233B)),
+                          border: Border.all(
+                            color: _selectedPage == (i + 1)
+                                ? cyberGreen
+                                : (_mitigatedPages.contains(i + 1)
+                                    ? cyberGreenBorder
+                                    : const Color(0xFF263B60)),
+                          ),
+                        ),
+                        child: _mitigatedPages.contains(i + 1) && _selectedPage != (i + 1)
+                            ? const Icon(Icons.check, size: 12, color: cyberGreen)
+                            : Text(
+                                '${i + 1}',
+                                style: TextStyle(
+                                  fontFamily: 'Arimo',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: _selectedPage == (i + 1)
+                                      ? bgDark
+                                      : textSecondary,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        lessons[i].navLabel,
+                        style: TextStyle(
+                          fontFamily: 'Arimo',
+                          fontSize: 12,
+                          fontWeight: _selectedPage == (i + 1)
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: _selectedPage == (i + 1)
+                              ? cyberGreen
+                              : textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+              if (i < lessons.length - 1)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKillChainNextCard(bool isLastLesson, Lesson lesson) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1B2E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isLastLesson ? cyberGreenBorder : const Color(0xFF1E3558),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 4),
+            blurRadius: 14,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              Icon(
+                isLastLesson ? Icons.task_alt_rounded : Icons.trending_up_rounded,
+                size: 16,
+                color: isLastLesson ? cyberGreen : const Color(0xFF38BDF8),
+              ),
+              Text(
+                isLastLesson
+                    ? 'INCIDENT TRAJECTORY RESOLVED'
+                    : 'NEXT THREAT IN INTRUSION PATH',
+                style: TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.6,
+                  color: isLastLesson ? cyberGreen : const Color(0xFF38BDF8),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isLastLesson
+                ? 'All three attack vectors have been mapped and mitigated. Test your knowledge with the security challenge.'
+                : lesson.nextPhasePreview,
+            style: const TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: textPrimary,
+              height: 1.35,
             ),
-            const SizedBox(height: 10),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (isLastLesson) {
+                  _goTo(0);
+                } else {
+                  _goTo(_selectedPage + 1);
+                }
+              },
+              icon: Icon(
+                isLastLesson ? Icons.quiz_rounded : Icons.arrow_forward_rounded,
+                size: 16,
+              ),
+              label: Text(
+                isLastLesson
+                    ? 'Complete Forensics & Take Defense Quiz'
+                    : 'Track Next Attack Vector ➔',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isLastLesson ? cyberGreen : const Color(0xFF1E293B),
+                foregroundColor: isLastLesson ? bgDark : cyberGreen,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color: isLastLesson ? cyberGreen : cyberGreenBorder,
+                  ),
+                ),
+                textStyle: const TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLessonPage(bool isMobile) {
+    final lesson = lessons[_selectedPage - 1];
+    final isLastLesson = _selectedPage == lessons.length;
+    final isMitigated = _mitigatedPages.contains(_selectedPage);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top Kill Chain Stepper Navigation
+            _buildLessonKillChainStepper(),
+            const SizedBox(height: 14),
+
+            // Top action bar: Back to home + Vector Status
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton.icon(
+                  onPressed: () => _goTo(0),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 17),
+                  label: const Text('Back to home'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    foregroundColor: cyberGreen,
+                    overlayColor: const Color(0x1F00E599),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: const BorderSide(color: Color(0xFF1E293B)),
+                    ),
+                    splashFactory: NoSplash.splashFactory,
+                    textStyle: const TextStyle(
+                      fontFamily: 'Arimo',
+                      fontSize: 13.5,
+                      height: 1.4,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isMitigated ? cyberGreenDim : const Color(0xFF1E1528),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isMitigated ? cyberGreenBorder : const Color(0xFF4C161E),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isMitigated ? Icons.verified_user_rounded : Icons.radar_rounded,
+                        size: 13,
+                        color: isMitigated ? cyberGreen : threatRed,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        isMitigated ? 'VECTOR MITIGATED' : 'INVESTIGATING',
+                        style: TextStyle(
+                          fontFamily: 'Arimo',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
+                          color: isMitigated ? cyberGreen : threatRed,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
             Align(
               alignment: Alignment.centerLeft,
               child: Container(
@@ -383,21 +1478,24 @@ class _AppShellState extends State<AppShell> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: tagBgColor,
+                  color: const Color(0x2600E599),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0x4D00E599)),
                 ),
                 child: Text(
-                  lesson.sectionLabel,
+                  '${lesson.stageName.toUpperCase()} · ${lesson.sectionLabel.toUpperCase()}',
                   style: const TextStyle(
-                    fontSize: 12,
-                    height: 1.6,
+                    fontFamily: 'Arimo',
+                    fontSize: 11.5,
+                    height: 1.5,
                     fontWeight: FontWeight.bold,
-                    color: tagTextColor,
+                    letterSpacing: 0.5,
+                    color: cyberGreen,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             LessonCard(
               isMobile: isMobile,
               number: lesson.number,
@@ -407,7 +1505,13 @@ class _AppShellState extends State<AppShell> {
               risk: lesson.risk,
               solution: lesson.solution,
             ),
+            const SizedBox(height: 20),
+
+            // In-Context Kill Chain Next Vector Card
+            _buildKillChainNextCard(isLastLesson, lesson),
             const SizedBox(height: 16),
+
+            // Secondary Lesson Nav Buttons (Previous / Next)
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               spacing: 12,
@@ -416,7 +1520,7 @@ class _AppShellState extends State<AppShell> {
                 if (_selectedPage > 1)
                   _lessonNavButton(
                     'Previous lesson',
-                    Icons.arrow_back,
+                    Icons.arrow_back_rounded,
                     _selectedPage - 1,
                   )
                 else
@@ -424,14 +1528,14 @@ class _AppShellState extends State<AppShell> {
                 if (_selectedPage < lessons.length)
                   _lessonNavButton(
                     'Next lesson',
-                    Icons.arrow_forward,
+                    Icons.arrow_forward_rounded,
                     _selectedPage + 1,
                   )
                 else
                   const SizedBox.shrink(),
               ],
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 32),
             const FooterSection(),
           ],
         ),
@@ -445,16 +1549,20 @@ class _AppShellState extends State<AppShell> {
       icon: Icon(icon, size: 16),
       label: Text(label),
       style: TextButton.styleFrom(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         minimumSize: const Size(0, 0),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        foregroundColor: linkColor,
-        overlayColor: Colors.transparent,
+        foregroundColor: cyberGreen,
+        overlayColor: const Color(0x1F00E599),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: cardBorder),
+        ),
         splashFactory: NoSplash.splashFactory,
         textStyle: const TextStyle(
           fontFamily: 'Arimo',
           fontSize: 13,
-          height: 1.6,
+          height: 1.4,
           letterSpacing: 0,
           fontWeight: FontWeight.bold,
         ),
@@ -470,17 +1578,47 @@ class _AppShellState extends State<AppShell> {
           : CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: tagBgColor,
+            color: threatRedBg,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: threatRedBorder),
+            boxShadow: const [
+              BoxShadow(color: Color(0x1AFF4D4F), blurRadius: 10),
+            ],
           ),
-          child: const Text(
-            'Welcome · System Security and Threats',
-            style: TextStyle(fontSize: 12, height: 1.6, color: tagTextColor),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: threatRed,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: threatRed, blurRadius: 6),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Welcome · System Security and Threats',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                    color: Color(0xFFFCA5A5),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Text(
           'Change Healthcare\nRansomware Attack (2024)',
           textAlign: isMobile ? TextAlign.center : TextAlign.left,
@@ -488,11 +1626,11 @@ class _AppShellState extends State<AppShell> {
             fontSize: titleSize,
             height: 1.15,
             letterSpacing: -1.2,
-            fontWeight: FontWeight.bold,
-            color: textColor,
+            fontWeight: FontWeight.w800,
+            color: textPrimary,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text(
           'Attackers used stolen login details to enter a system without MFA. '
           'The attack disrupted healthcare claims and payments.',
@@ -500,33 +1638,99 @@ class _AppShellState extends State<AppShell> {
           style: const TextStyle(
             fontSize: 15,
             height: 1.55,
-            color: mutedTextColor,
+            color: textSecondary,
           ),
         ),
       ],
     );
 
-    final gifSize = isMobile ? 140.0 : 185.0;
+    final gifWidth = isMobile ? 180.0 : 210.0;
     final gif = Semantics(
       image: true,
       label: 'Laptop hacking animation',
       child: Container(
-        width: gifSize,
-        height: gifSize,
+        width: gifWidth,
         decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor),
+          border: Border.all(color: const Color(0xFF243349), width: 1.2),
           boxShadow: const [
             BoxShadow(
-              color: Color.fromRGBO(38, 63, 57, 0.1),
-              offset: Offset(0, 6),
+              color: Color(0x80000000),
+              offset: Offset(0, 10),
+              blurRadius: 28,
+            ),
+            BoxShadow(
+              color: Color(0x1F00E599),
+              offset: Offset(0, 0),
               blurRadius: 18,
             ),
           ],
-          image: const DecorationImage(
-            image: AssetImage('laptop-hacking.gif'),
-            fit: BoxFit.cover,
-          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: const BoxDecoration(
+                color: Color(0xFF162032),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                border: Border(bottom: BorderSide(color: Color(0xFF1E293B))),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF5F56),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFBD2E),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF27C93F),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'breach-telemetry.sh',
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 10,
+                        color: textDim,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
+              child: Image.asset(
+                'laptop-hacking.gif',
+                width: gifWidth,
+                height: gifWidth * 0.78,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -545,14 +1749,13 @@ class _AppShellState extends State<AppShell> {
       );
     }
 
-    // 580 (text) + 36 (gap) + 185 (image) = 801
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 801),
+        constraints: const BoxConstraints(maxWidth: 820),
         child: Row(
           children: [
             Expanded(child: headerText),
-            const SizedBox(width: 36),
+            const SizedBox(width: 32),
             gif,
           ],
         ),
@@ -845,40 +2048,71 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 8, 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: tagBgColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.smart_toy, size: 20, color: tagTextColor),
+            child: const Icon(Icons.smart_toy_rounded, size: 22, color: primaryColor),
           ),
-          const SizedBox(width: 10),
-          const Expanded(
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Study assistant',
-                  style: TextStyle(
-                    fontSize: 15.5,
-                    height: 1.25,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    const Text(
+                      'Study assistant',
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.25,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: solutionBgColor,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: solutionBorderColor),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.circle, size: 6, color: Color(0xFF10B981)),
+                          SizedBox(width: 4),
+                          Text(
+                            'ONLINE',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 2),
-                Text(
+                const SizedBox(height: 2),
+                const Text(
                   'Ask about the Change Healthcare attack',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     height: 1.3,
                     color: mutedTextColor,
                   ),
@@ -891,7 +2125,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
             tooltip: 'Close assistant',
             icon: const Icon(Icons.close_rounded, size: 20),
             style: IconButton.styleFrom(
-              foregroundColor: mutedTextColor,
+              foregroundColor: textDim,
               padding: EdgeInsets.zero,
               minimumSize: const Size(36, 36),
             ),
@@ -920,20 +2154,21 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
                 ActionChip(
                   label: Text(suggestion),
                   onPressed: sending ? null : () => _sendMessage(suggestion),
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: borderColor),
+                  backgroundColor: const Color(0xFF131D30),
+                  side: const BorderSide(color: cardBorder),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
+                    horizontal: 6,
+                    vertical: 3,
                   ),
                   labelStyle: const TextStyle(
                     fontFamily: 'Arimo',
                     fontSize: 12,
                     height: 1.3,
-                    color: linkColor,
+                    color: cyberGreen,
+                    fontWeight: FontWeight.w500,
                   ),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -948,10 +2183,10 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
   Widget _buildComposer(double bottomSafeArea) {
     final sending = widget.session.sending;
     return Container(
-      padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + bottomSafeArea),
+      padding: EdgeInsets.fromLTRB(14, 12, 14, 12 + bottomSafeArea),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: borderColor)),
+        color: Color(0xFF0F172A),
+        border: Border(top: BorderSide(color: cardBorder)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -968,17 +2203,17 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
                 fontFamily: 'Arimo',
                 fontSize: 14,
                 height: 1.45,
-                color: textColor,
+                color: textPrimary,
               ),
               decoration: InputDecoration(
                 hintText: 'Ask about the case study…',
                 hintStyle: const TextStyle(
                   fontFamily: 'Arimo',
                   fontSize: 14,
-                  color: footerTextColor,
+                  color: textDim,
                 ),
                 filled: true,
-                fillColor: bgColor,
+                fillColor: const Color(0xFF131D30),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -986,20 +2221,20 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: borderColor),
+                  borderSide: const BorderSide(color: cardBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: borderColor),
+                  borderSide: const BorderSide(color: cardBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: tagTextColor, width: 1.4),
+                  borderSide: const BorderSide(color: cyberGreen, width: 1.5),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           SizedBox(
             width: 44,
             height: 44,
@@ -1007,10 +2242,10 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
               onPressed: sending ? null : () => _sendMessage(),
               tooltip: 'Send',
               style: IconButton.styleFrom(
-                backgroundColor: textColor,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: tagBgColor,
-                disabledForegroundColor: tagTextColor,
+                backgroundColor: cyberGreen,
+                foregroundColor: const Color(0xFF090D16),
+                disabledBackgroundColor: const Color(0xFF13232C),
+                disabledForegroundColor: textDim,
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
@@ -1022,7 +2257,7 @@ class _StudyAssistantSheetState extends State<StudyAssistantSheet> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: tagTextColor,
+                        color: Color(0xFF090D16),
                       ),
                     )
                   : const Icon(Icons.arrow_upward_rounded, size: 20),
@@ -1046,11 +2281,11 @@ class _MessageBubble extends StatelessWidget {
       fontFamily: 'Arimo',
       fontSize: 13.5,
       height: 1.55,
-      color: isUser ? Colors.white : textColor,
+      color: textPrimary,
     );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: isUser
@@ -1059,36 +2294,37 @@ class _MessageBubble extends StatelessWidget {
         children: [
           if (!isUser)
             Container(
-              width: 26,
-              height: 26,
-              margin: const EdgeInsets.only(top: 2, right: 8),
+              width: 28,
+              height: 28,
+              margin: const EdgeInsets.only(top: 2, right: 10),
               decoration: BoxDecoration(
-                color: tagBgColor,
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFF16233B),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: const Color(0xFF263B60)),
               ),
-              child: const Icon(Icons.smart_toy, size: 14, color: tagTextColor),
+              child: const Icon(Icons.smart_toy_rounded, size: 16, color: cyberGreen),
             ),
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser ? textColor : Colors.white,
-                border: isUser ? null : Border.all(color: borderColor),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 5),
-                  bottomRight: Radius.circular(isUser ? 5 : 16),
+                color: isUser ? const Color(0xFF1E293B) : const Color(0xFF131D30),
+                border: Border.all(
+                  color: isUser ? const Color(0xFF334155) : cardBorder,
                 ),
-                boxShadow: isUser
-                    ? null
-                    : const [
-                        BoxShadow(
-                          color: Color.fromRGBO(38, 63, 57, 0.04),
-                          offset: Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ],
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 6),
+                  bottomRight: Radius.circular(isUser ? 6 : 18),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x40000000),
+                    offset: Offset(0, 2),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
               child: _buildFormattedContent(message.text, baseStyle, isUser),
             ),
@@ -1129,7 +2365,10 @@ class _MessageBubble extends StatelessWidget {
         spans.add(TextSpan(text: match.group(1), style: baseStyle));
         spans.add(TextSpan(
           text: match.group(2),
-          style: baseStyle.copyWith(fontWeight: FontWeight.bold),
+          style: baseStyle.copyWith(
+            fontWeight: FontWeight.bold,
+            color: cyberGreen,
+          ),
         ));
         spans.add(TextSpan(text: match.group(3), style: baseStyle));
       } else {
@@ -1157,26 +2396,34 @@ class _ThinkingBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 26,
-          height: 26,
-          margin: const EdgeInsets.only(top: 2, right: 8),
+          width: 28,
+          height: 28,
+          margin: const EdgeInsets.only(top: 2, right: 10),
           decoration: BoxDecoration(
-            color: tagBgColor,
-            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xFF16233B),
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(color: const Color(0xFF263B60)),
           ),
-          child: const Icon(Icons.smart_toy, size: 14, color: tagTextColor),
+          child: const Icon(Icons.smart_toy_rounded, size: 16, color: cyberGreen),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: borderColor),
+            color: const Color(0xFF131D30),
+            border: Border.all(color: cardBorder),
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-              bottomLeft: Radius.circular(5),
-              bottomRight: Radius.circular(16),
+              topLeft: Radius.circular(18),
+              topRight: Radius.circular(18),
+              bottomLeft: Radius.circular(6),
+              bottomRight: Radius.circular(18),
             ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x40000000),
+                offset: Offset(0, 2),
+                blurRadius: 6,
+              ),
+            ],
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -1185,18 +2432,19 @@ class _ThinkingBubble extends StatelessWidget {
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(
-                  strokeWidth: 1.8,
-                  color: tagTextColor,
+                  strokeWidth: 2,
+                  color: cyberGreen,
                 ),
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 10),
               Text(
-                'Thinking…',
+                'Analyzing threats…',
                 style: TextStyle(
                   fontFamily: 'Arimo',
                   fontSize: 13,
                   height: 1.4,
-                  color: mutedTextColor,
+                  fontWeight: FontWeight.w500,
+                  color: textSecondary,
                 ),
               ),
             ],
@@ -1229,119 +2477,221 @@ class LessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = isMobile ? 20.0 : 23.0;
+    final padding = isMobile ? 20.0 : 26.0;
 
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(14),
+        color: cardDark,
+        border: Border.all(color: cardBorder),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 6),
+            blurRadius: 20,
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: numberBgColor,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Text(
-              number,
-              style: const TextStyle(
-                fontSize: 16,
-                height: 1.6,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 13),
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: title),
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Icon(icon, size: 18, color: tagTextColor),
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: numberBgColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: cardBorderGlow),
+                ),
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    fontFamily: 'Arimo',
+                    fontSize: 16,
+                    height: 1.2,
+                    fontWeight: FontWeight.bold,
+                    color: cyberGreen,
                   ),
                 ),
-              ],
-            ),
-            style: const TextStyle(
-              fontSize: 19,
-              height: 1.3,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontFamily: 'Arimo',
+                          fontSize: 21,
+                          height: 1.25,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.3,
+                          color: textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: cyberGreenDim,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: cyberGreenBorder),
+                      ),
+                      child: Icon(icon, size: 18, color: cyberGreen),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 13),
-          _paragraph('Weakness:', weakness),
-          const SizedBox(height: 12),
-          _paragraph('Risk:', risk),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.only(top: 12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: dividerColor)),
-            ),
-            child: _paragraph('Solution:', solution, icon: Icons.lightbulb),
+          const SizedBox(height: 22),
+
+          // 1. Weakness Block
+          _buildDetailBlock(
+            label: 'Weakness',
+            content: weakness,
+            icon: Icons.warning_amber_rounded,
+            badgeBg: weaknessBgColor,
+            badgeBorder: weaknessBorderColor,
+            badgeText: weaknessTextColor,
+          ),
+          const SizedBox(height: 14),
+
+          // 2. Risk Block
+          _buildDetailBlock(
+            label: 'Risk',
+            content: risk,
+            icon: Icons.crisis_alert_rounded,
+            badgeBg: riskBgColor,
+            badgeBorder: riskBorderColor,
+            badgeText: riskTextColor,
+          ),
+          const SizedBox(height: 14),
+
+          // 3. Solution Block
+          _buildDetailBlock(
+            label: 'Solution',
+            content: solution,
+            icon: Icons.verified_user_rounded,
+            badgeBg: solutionBgColor,
+            badgeBorder: solutionBorderColor,
+            badgeText: solutionTextColor,
+            isHighlighted: true,
           ),
         ],
       ),
     );
   }
 
-  Widget _paragraph(String label, String text, {IconData? icon}) {
-    final paragraph = Text.rich(
-      TextSpan(
+  Widget _buildDetailBlock({
+    required String label,
+    required String content,
+    required IconData icon,
+    required Color badgeBg,
+    required Color badgeBorder,
+    required Color badgeText,
+    bool isHighlighted = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isHighlighted ? const Color(0xFF0C1A2E) : const Color(0xFF0D1626),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isHighlighted ? cyberGreenBorder : const Color(0xFF1E2D44),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextSpan(
-            text: label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(color: badgeBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 13, color: badgeText),
+                    const SizedBox(width: 5),
+                    Text(
+                      label.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        color: badgeText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          TextSpan(text: ' $text'),
+          const SizedBox(height: 10),
+          Text(
+            content,
+            style: const TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 14.5,
+              height: 1.6,
+              color: Color(0xFFE2E8F0),
+            ),
+          ),
         ],
       ),
-      style: const TextStyle(fontSize: 14, height: 1.6, color: textColor),
-    );
-
-    if (icon == null) {
-      return paragraph;
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Icon(icon, size: 16, color: tagTextColor),
-        ),
-        const SizedBox(width: 5),
-        Expanded(child: paragraph),
-      ],
     );
   }
 }
 
-class QuestionSection extends StatelessWidget {
+class QuestionSection extends StatefulWidget {
   const QuestionSection({super.key});
+
+  @override
+  State<QuestionSection> createState() => _QuestionSectionState();
+}
+
+class _QuestionSectionState extends State<QuestionSection> {
+  // -1: not chosen, 0: chosen 'No' (correct), 1: chosen 'Yes' (incorrect)
+  int _selectedOption = -1;
+  bool _isOpen = false;
+
+  void _chooseOption(int option) {
+    setState(() {
+      _selectedOption = option;
+      _isOpen = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 2px more at the bottom offsets the 2px the summary moves up below,
-      // keeping the closed card the same height as the HTML version.
-      padding: const EdgeInsets.fromLTRB(23, 23, 23, 25),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 26),
       decoration: BoxDecoration(
-        color: questionBgColor,
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFF0D172A),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF1E2F4D)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 4),
+            blurRadius: 14,
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1353,15 +2703,15 @@ class QuestionSection extends StatelessWidget {
                 'Quick question',
                 textAlign: TextAlign.center,
                 style: TextStyle(
+                  fontFamily: 'Arimo',
                   fontSize: 19,
                   height: 1.3,
                   fontWeight: FontWeight.bold,
-                  color: textColor,
+                  letterSpacing: -0.2,
+                  color: textPrimary,
                 ),
               ),
-              const SizedBox(width: 6),
-              // The original page uses the colour 💭 emoji. Flutter Web only
-              // has a black-and-white fallback, so use the picture instead.
+              const SizedBox(width: 8),
               Transform.translate(
                 offset: const Offset(0, -1),
                 child: Image.asset(
@@ -1373,24 +2723,206 @@ class QuestionSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 13),
+          const SizedBox(height: 12),
           const Text(
             'A hospital’s old server still works. '
             'Should it skip security updates?',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, height: 1.6, color: textColor),
+            style: TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 15.5,
+              height: 1.55,
+              color: textSecondary,
+            ),
           ),
-          // 17px instead of the collapsed CSS 16px to balance Flutter's
-          // rounded line heights. The extra 2px at the bottom of the card
-          // keeps the section boundary aligned with the HTML.
-          const SizedBox(height: 17),
+          const SizedBox(height: 18),
+
+          // Interactive choice pills
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildChoiceButton(
+                label: '❌ No (Always patch)',
+                isSelected: _selectedOption == 0,
+                isCorrect: true,
+                onTap: () => _chooseOption(0),
+              ),
+              _buildChoiceButton(
+                label: '⚠️ Yes (If it still functions)',
+                isSelected: _selectedOption == 1,
+                isCorrect: false,
+                onTap: () => _chooseOption(1),
+              ),
+            ],
+          ),
+
+          if (_selectedOption != -1) ...[
+            const SizedBox(height: 14),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: _selectedOption == 0 ? solutionBgColor : weaknessBgColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _selectedOption == 0
+                      ? solutionBorderColor
+                      : weaknessBorderColor,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _selectedOption == 0
+                        ? Icons.check_circle_rounded
+                        : Icons.info_outline_rounded,
+                    size: 16,
+                    color: _selectedOption == 0
+                        ? solutionTextColor
+                        : weaknessTextColor,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      _selectedOption == 0
+                          ? 'Spot on! Operational does not equal secure.'
+                          : 'Watch out: Legacy unpatched systems are the #1 attack vector.',
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: _selectedOption == 0
+                            ? solutionTextColor
+                            : weaknessTextColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 660),
-              child: const ShowAnswerButton(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => setState(() => _isOpen = !_isOpen),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: cyberGreen,
+                        overlayColor: Colors.transparent,
+                        splashFactory: NoSplash.splashFactory,
+                        textStyle: const TextStyle(
+                          fontFamily: 'Arimo',
+                          fontSize: 14,
+                          height: 1.6,
+                          letterSpacing: 0,
+                          fontWeight: FontWeight.bold,
+                          color: cyberGreen,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _DisclosureMarker(expanded: _isOpen),
+                          const Text(
+                            'Show answer',
+                            style: TextStyle(
+                              fontFamily: 'Arimo',
+                              fontSize: 14,
+                              height: 1.6,
+                              fontWeight: FontWeight.bold,
+                              color: cyberGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_isOpen) ...[
+                    const SizedBox(height: 14),
+                    const Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'No.',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text:
+                                ' Working does not mean secure. Test updates using '
+                                'sample claims, check the results, and prepare a backup '
+                                'and rollback plan before updating.',
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Arimo',
+                        fontSize: 14,
+                        height: 1.6,
+                        color: textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChoiceButton({
+    required String label,
+    required bool isSelected,
+    required bool isCorrect,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: isSelected
+          ? (isCorrect ? solutionBgColor : weaknessBgColor)
+          : const Color(0xFF131D30),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? (isCorrect ? solutionTextColor : weaknessTextColor)
+                  : cardBorder,
+              width: isSelected ? 1.5 : 1.0,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Arimo',
+              fontSize: 13.5,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected
+                  ? (isCorrect ? solutionTextColor : weaknessTextColor)
+                  : textPrimary,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1419,7 +2951,7 @@ class _ShowAnswerButtonState extends State<ShowAnswerButton> {
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 0),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              foregroundColor: textColor,
+              foregroundColor: cyberGreen,
               overlayColor: Colors.transparent,
               splashFactory: NoSplash.splashFactory,
               textStyle: const TextStyle(
@@ -1428,14 +2960,12 @@ class _ShowAnswerButtonState extends State<ShowAnswerButton> {
                 height: 1.6,
                 letterSpacing: 0,
                 fontWeight: FontWeight.bold,
-                color: textColor,
+                color: cyberGreen,
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // A 7x9 triangle plus an 8px gap, matching the native
-                // disclosure marker used by the HTML <summary> element.
                 _DisclosureMarker(expanded: _isOpen),
                 const Text(
                   'Show answer',
@@ -1443,7 +2973,7 @@ class _ShowAnswerButtonState extends State<ShowAnswerButton> {
                     fontSize: 14,
                     height: 1.6,
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    color: cyberGreen,
                   ),
                 ),
               ],
@@ -1457,7 +2987,7 @@ class _ShowAnswerButtonState extends State<ShowAnswerButton> {
               children: [
                 TextSpan(
                   text: 'No.',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: textPrimary),
                 ),
                 TextSpan(
                   text:
@@ -1468,11 +2998,8 @@ class _ShowAnswerButtonState extends State<ShowAnswerButton> {
               ],
             ),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, height: 1.6, color: textColor),
+            style: TextStyle(fontSize: 14, height: 1.6, color: textSecondary),
           ),
-          // This, plus the extra bottom padding on the section, keeps the
-          // open card the same height as the HTML version after Flutter
-          // rounds the text line heights.
           const SizedBox(height: 15),
         ],
       ],
@@ -1486,7 +3013,7 @@ class FooterSection extends StatelessWidget {
   static const _footerStyle = TextStyle(
     fontSize: 12,
     height: 1.6,
-    color: footerTextColor,
+    color: textDim,
   );
 
   @override
@@ -1528,7 +3055,7 @@ class FooterSection extends StatelessWidget {
         padding: EdgeInsets.zero,
         minimumSize: const Size(0, 0),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        foregroundColor: linkColor,
+        foregroundColor: cyberGreen,
         overlayColor: Colors.transparent,
         splashFactory: NoSplash.splashFactory,
         textStyle: const TextStyle(
@@ -1536,7 +3063,7 @@ class FooterSection extends StatelessWidget {
           fontSize: 12,
           height: 1.6,
           letterSpacing: 0,
-          color: linkColor,
+          color: cyberGreen,
         ),
       ),
       child: Text(
@@ -1544,7 +3071,7 @@ class FooterSection extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12,
           height: 1.6,
-          color: linkColor,
+          color: cyberGreen,
           decoration: TextDecoration.underline,
         ),
       ),
@@ -1595,7 +3122,7 @@ class _DisclosureTrianglePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = textColor;
+    final paint = Paint()..color = cyberGreen;
     final path = Path();
     if (expanded) {
       path
