@@ -522,13 +522,21 @@ class _AppShellState extends State<AppShell> {
       image: true,
       label: 'Laptop hacking animation',
       child: Container(
-        width: isMobile ? double.infinity : 210,
-        height: isMobile ? 180 : 158,
-        constraints: isMobile ? const BoxConstraints(maxWidth: 420) : null,
+        width: isMobile ? double.infinity : 280,
+        height: isMobile ? 230 : 210,
+        constraints: isMobile ? const BoxConstraints(maxWidth: 520) : null,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: lineColor),
+          color: surfaceColor,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Image.asset(
           'laptop-hacking.gif',
@@ -1400,7 +1408,12 @@ class ChatSession extends ChangeNotifier {
   static Uri _chatEndpoint() {
     const override = String.fromEnvironment('AI_CHAT_ENDPOINT');
     if (override.isNotEmpty) return Uri.parse(override);
-    if (kIsWeb) return Uri.base.resolve('/api/chat');
+    if (kIsWeb) {
+      if (Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1') {
+        return Uri.parse('https://healthcare-studycase.space/api/chat');
+      }
+      return Uri.base.resolve('/api/chat');
+    }
     return Uri.parse('https://healthcare-studycase.space/api/chat');
   }
 }
