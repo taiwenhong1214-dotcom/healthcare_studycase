@@ -14,8 +14,8 @@ This study examines key architectural vulnerabilities, security risks, and pract
 
 ## 🧭 App Structure
 
-- **Overview:** An editorial cover, three impact figures, a compact index of the
-  three weaknesses, and a quick knowledge-check question.
+- **Overview:** An editorial cover, three impact figures, a start-learning
+  button, and a quick knowledge-check question.
 - **Missing MFA**, **Outdated Systems**, and **Poor Network Separation:** One
   focused reading page per vulnerability, with weakness, risk, and fix sections.
 - A fixed bottom navigation links the overview, all three lessons, and the study

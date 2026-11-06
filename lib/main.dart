@@ -441,8 +441,6 @@ class _AppShellState extends State<AppShell> {
         SizedBox(height: isMobile ? 32 : 40),
         _buildStats(isMobile),
         SizedBox(height: isMobile ? 40 : 48),
-        _buildLessonIndex(isMobile),
-        SizedBox(height: isMobile ? 40 : 48),
         const _QuestionSection(),
         SizedBox(height: isMobile ? 40 : 48),
         const _FooterSection(),
@@ -627,119 +625,6 @@ class _AppShellState extends State<AppShell> {
               Container(width: 1, height: isMobile ? 30 : 38, color: lineColor),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildLessonIndex(bool isMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Text(
-          'WHAT WENT WRONG',
-          style: TextStyle(
-            fontSize: 12,
-            height: 1.4,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-            color: accentColor,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Three weaknesses, one breach',
-          style: TextStyle(
-            fontSize: isMobile ? 24 : 28,
-            height: 1.2,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            color: textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Each lesson explains one weakness, the risk it created, and the fix '
-          'that would have helped.',
-          style: _bodyStyle,
-        ),
-        const SizedBox(height: 20),
-        Column(
-          children: [
-            for (var i = 0; i < lessons.length; i++)
-              _buildLessonRow(lessons[i], i + 1, isMobile),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLessonRow(Lesson lesson, int page, bool isMobile) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _goTo(page),
-        hoverColor: const Color(0x08FFFFFF),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: EdgeInsets.all(isMobile ? 16 : 22),
-          decoration: BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: lineColor),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                margin: const EdgeInsets.only(right: 16),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: accentSurface,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  lesson.number,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                    fontWeight: FontWeight.w600,
-                    color: textDim,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      lesson.title,
-                      style: TextStyle(
-                        fontSize: isMobile ? 16 : 17,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
-                        color: textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      lesson.blurb,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        height: 1.4,
-                        color: textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.arrow_forward_rounded, size: 18, color: textDim),
-            ],
-          ),
-        ),
       ),
     );
   }

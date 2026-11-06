@@ -1125,41 +1125,6 @@
           </div>
         </div>
 
-        <section class="section" aria-labelledby="index-heading">
-          <div class="eyebrow accent">What went wrong</div>
-          <h2 id="index-heading">Three weaknesses, one breach</h2>
-          <p class="section-intro">
-            Each lesson explains one weakness, the risk it created, and the fix
-            that would have helped.
-          </p>
-          <div class="lesson-list">
-            <a class="lesson-row" href="?lesson=1" data-lesson="1">
-              <span class="lesson-number">01</span>
-              <div class="lesson-copy">
-                <h3>Missing MFA</h3>
-                <p>One stolen password was all it took.</p>
-              </div>
-              <span class="arrow" aria-hidden="true">→</span>
-            </a>
-            <a class="lesson-row" href="?lesson=2" data-lesson="2">
-              <span class="lesson-number">02</span>
-              <div class="lesson-copy">
-                <h3>Outdated Systems</h3>
-                <p>Old servers kept known flaws alive.</p>
-              </div>
-              <span class="arrow" aria-hidden="true">→</span>
-            </a>
-            <a class="lesson-row" href="?lesson=3" data-lesson="3">
-              <span class="lesson-number">03</span>
-              <div class="lesson-copy">
-                <h3>Poor Network Separation</h3>
-                <p>A flat network let the breach spread.</p>
-              </div>
-              <span class="arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
-        </section>
-
         <section class="question" aria-labelledby="question-heading">
           <div class="eyebrow accent">Quick question</div>
           <h2 id="question-heading">
@@ -1503,7 +1468,7 @@
         window.scrollTo(0, 0);
       }
 
-      document.querySelectorAll(".lesson-row, .start-button").forEach((row) => {
+      document.querySelectorAll(".start-button").forEach((row) => {
         row.addEventListener("click", (event) => {
           event.preventDefault();
           navigate(Number(row.dataset.lesson));
