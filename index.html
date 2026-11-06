@@ -165,14 +165,90 @@
         line-height: 1.5;
       }
 
-      .hero-gif {
-        width: 280px;
-        height: 210px;
+      .hero-gif-container {
+        position: relative;
         flex: none;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .hero-gif {
+        display: block;
+        width: 300px;
+        height: 220px;
         object-fit: cover;
         border: 1px solid var(--line);
         border-radius: 16px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        transition: transform 0.16s ease;
+      }
+
+      .hero-gif-container:hover .hero-gif {
+        transform: scale(1.01);
+      }
+
+      .fullscreen-pill {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        background: rgba(11, 13, 16, 0.85);
+        border: 1px solid var(--line);
+        color: var(--text-2);
+        font-size: 11px;
+        font-weight: 600;
+        pointer-events: none;
+      }
+
+      /* Lightbox ----------------------------------------------------------- */
+      .image-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .lightbox-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.94);
+      }
+
+      .lightbox-content {
+        position: relative;
+        z-index: 1;
+        max-width: 90vw;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .lightbox-img {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8);
+      }
+
+      .lightbox-close {
+        position: absolute;
+        top: -44px;
+        right: 0;
+        background: transparent;
+        border: 0;
+        color: #fff;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 8px;
       }
 
       .stats {
@@ -614,9 +690,38 @@
 
       .nav-inner {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         max-width: 620px;
         margin: 0 auto;
+      }
+
+      .assistant-fab {
+        position: fixed;
+        right: 20px;
+        bottom: calc(72px + env(safe-area-inset-bottom));
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        border: 1.2px solid var(--accent-line, #2A5045);
+        background: var(--surface);
+        color: var(--accent);
+        box-shadow: 0 4px 16px rgba(111, 211, 181, 0.2), 0 8px 24px rgba(0, 0, 0, 0.45);
+        cursor: pointer;
+        transition: transform 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .assistant-fab:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 6px 20px rgba(111, 211, 181, 0.35), 0 10px 28px rgba(0, 0, 0, 0.55);
+      }
+
+      .assistant-fab svg {
+        width: 24px;
+        height: 24px;
       }
 
       .nav-button {
@@ -883,14 +988,25 @@
           display: block;
         }
 
+        .hero-gif-container {
+          position: relative;
+          width: calc(100% + 44px);
+          margin-left: -22px;
+          margin-right: -22px;
+          margin-top: 20px;
+          cursor: pointer;
+        }
+
         .hero-gif {
           display: block;
           width: 100%;
-          max-width: 520px;
-          height: 230px;
+          height: 235px;
           object-fit: cover;
-          margin-top: 20px;
-          border-radius: 16px;
+          border-radius: 0;
+          border-left: none;
+          border-right: none;
+          border-top: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
         }
 
         .hero h1 {
@@ -1029,13 +1145,21 @@
             </p>
             <div class="meta">3 lessons · About 8 minutes</div>
           </div>
-          <img
-            class="hero-gif"
-            src="laptop-hacking.gif"
-            width="280"
-            height="210"
-            alt="Laptop hacking animation"
-          />
+          <div class="hero-gif-container" id="hero-gif-wrap" title="Click to view full screen">
+            <img
+              class="hero-gif"
+              src="laptop-hacking.gif"
+              width="300"
+              height="220"
+              alt="Laptop hacking animation"
+            />
+            <div class="fullscreen-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              <span>Full screen</span>
+            </div>
+          </div>
         </header>
 
         <div class="stats" aria-label="Incident impact">
@@ -1256,19 +1380,32 @@
           </svg>
           <span>Network</span>
         </button>
-        <button
-          class="nav-button"
-          type="button"
-          id="ask-button"
-          aria-expanded="false"
-          aria-controls="assistant-panel"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1a8.6 8.6 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" />
-          </svg>
-          <span>Ask</span>
-        </button>
       </div>
+    </nav>
+
+    <!-- Floating Assistant Button ----------------------------------------- -->
+    <button
+      class="assistant-fab"
+      type="button"
+      id="ask-button"
+      aria-expanded="false"
+      aria-controls="assistant-panel"
+      title="Ask the study assistant"
+      aria-label="Ask the study assistant"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1a8.6 8.6 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" />
+      </svg>
+    </button>
+
+    <!-- Image Lightbox ---------------------------------------------------- -->
+    <div id="image-lightbox" class="image-lightbox" hidden>
+      <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+      <div class="lightbox-content">
+        <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close full screen">✕</button>
+        <img src="laptop-hacking.gif" alt="Laptop hacking animation full screen" class="lightbox-img" />
+      </div>
+    </div>
     </nav>
 
     <!-- Assistant ------------------------------------------------------- -->
@@ -1439,6 +1576,31 @@
         button.addEventListener("click", () => {
           navigate(Number(button.dataset.page));
         });
+      });
+
+      // Lightbox ----------------------------------------------------------
+      const heroGifWrap = document.getElementById("hero-gif-wrap");
+      const lightbox = document.getElementById("image-lightbox");
+      const lightboxBackdrop = document.getElementById("lightbox-backdrop");
+      const lightboxClose = document.getElementById("lightbox-close");
+
+      function openLightbox() {
+        if (!lightbox) return;
+        lightbox.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      if (heroGifWrap) heroGifWrap.addEventListener("click", openLightbox);
+      if (lightboxBackdrop) lightboxBackdrop.addEventListener("click", closeLightbox);
+      if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && lightbox && !lightbox.hidden) closeLightbox();
       });
 
       document.getElementById("back-home").addEventListener("click", (event) => {
