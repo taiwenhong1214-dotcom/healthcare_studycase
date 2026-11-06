@@ -1081,6 +1081,27 @@
         .lesson-row { padding: 16px; }
         .question { padding: 22px; }
       }
+      /* A separate action row keeps the primary action aligned at every size. */
+      .hero { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 28px 40px; }
+      .hero h1 { font-size: 44px; }
+      .hero-copy > p { margin-bottom: 0; }
+      .hero-gif { width: 200px; height: 200px; justify-self: center; }
+      .hero-actions { grid-column: 1 / -1; flex-wrap: nowrap; justify-content: space-between; gap: 20px; padding-top: 22px; border-top: 1px solid var(--line); }
+      .hero-actions .meta { display: flex; gap: 8px; align-items: center; }
+      .meta-clock { font-size: 20px; line-height: 1; color: var(--accent); }
+      .start-button { width: 196px; min-height: 52px; flex-shrink: 0; justify-content: space-between; font-size: 15px; line-height: 1.4; }
+      .stats { margin-top: 24px; }
+      @media (max-width: 899px) {
+        .hero { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+      }
+      @media (max-width: 720px) {
+        .hero { padding: 20px; }
+        .hero h1 { font-size: 32px; }
+        .hero-gif { width: 144px; height: 144px; }
+        .hero-actions { flex-direction: column; align-items: stretch; gap: 16px; margin-top: 8px; }
+        .start-button { width: 100%; }
+        .stats { margin-top: 20px; }
+      }
     </style>
   </head>
   <body>
@@ -1099,7 +1120,7 @@
               This short case study looks at the three weaknesses that made it
               possible — and what would have stopped them.
             </p>
-            <div class="hero-actions"><a class="start-button" href="?lesson=1" data-lesson="1">Start learning <span aria-hidden="true">↗</span></a><div class="meta">3 lessons · About 8 minutes</div></div>
+
           </div>
           <img
             class="hero-gif"
@@ -1108,6 +1129,10 @@
             height="230"
             alt="Laptop hacking animation"
           />
+          <div class="hero-actions">
+            <div class="meta"><span class="meta-clock" aria-hidden="true">◷</span>3 lessons · About 8 minutes</div>
+            <a class="start-button" href="?lesson=1" data-lesson="1">Start learning <span aria-hidden="true">→</span></a>
+          </div>
         </header>
 
         <div class="stats" aria-label="Incident impact">

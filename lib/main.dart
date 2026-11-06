@@ -438,7 +438,7 @@ class _AppShellState extends State<AppShell> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildHero(isMobile),
-        SizedBox(height: isMobile ? 32 : 40),
+        SizedBox(height: isMobile ? 20 : 24),
         _buildStats(isMobile),
         SizedBox(height: isMobile ? 40 : 48),
         const _QuestionSection(),
@@ -449,6 +449,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   Widget _buildHero(bool isMobile) {
+    final stacked = MediaQuery.sizeOf(context).width < 900;
     final copy = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -481,7 +482,7 @@ class _AppShellState extends State<AppShell> {
         Text(
           'The Change Healthcare ransomware attack',
           style: TextStyle(
-            fontSize: isMobile ? 34 : 48,
+            fontSize: isMobile ? 32 : 44,
             height: 1.12,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.8,
@@ -502,24 +503,7 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
         ),
-        const SizedBox(height: 18),
-        Wrap(
-          spacing: 18,
-          runSpacing: 14,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: () => _goTo(1),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-              label: const Text('Start learning'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const Text('3 lessons · About 8 minutes', style: _smallStyle),
-          ],
-        ),
+
       ],
     );
 
@@ -527,8 +511,8 @@ class _AppShellState extends State<AppShell> {
       image: true,
       label: 'Laptop hacking animation',
       child: Container(
-        width: isMobile ? 180 : 240,
-        height: isMobile ? 180 : 240,
+        width: isMobile ? 144 : 200,
+        height: isMobile ? 144 : 200,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -550,7 +534,7 @@ class _AppShellState extends State<AppShell> {
     );
 
     return Container(
-      padding: EdgeInsets.all(isMobile ? 22 : 36),
+      padding: EdgeInsets.all(isMobile ? 20 : 36),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -560,16 +544,65 @@ class _AppShellState extends State<AppShell> {
         border: Border.all(color: lineStrongColor),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: isMobile
-          ? Column(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (stacked)
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [copy, const SizedBox(height: 24), Center(child: gif)],
+              children: [copy, const SizedBox(height: 20), Center(child: gif)],
             )
-          : Row(
+          else
+            Row(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Expanded(child: copy), const SizedBox(width: 32), gif],
+              children: [Expanded(child: copy), const SizedBox(width: 40), gif],
             ),
+          const SizedBox(height: 28),
+          const Divider(height: 1, color: lineColor),
+          const SizedBox(height: 22),
+          _buildHeroActions(isMobile),
+        ],
+      ),
     );
+  }
+
+  Widget _buildHeroActions(bool isMobile) {
+    const meta = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.schedule_rounded, size: 16, color: accentColor),
+        SizedBox(width: 8),
+        Flexible(child: Text('3 lessons · About 8 minutes', style: _smallStyle)),
+      ],
+    );
+    final button = SizedBox(
+      width: isMobile ? double.infinity : 196,
+      height: 52,
+      child: FilledButton(
+        onPressed: () => _goTo(1),
+        style: FilledButton.styleFrom(
+          backgroundColor: accentColor,
+          foregroundColor: accentInk,
+          padding: const EdgeInsets.symmetric(horizontal: 22),
+          textStyle: const TextStyle(fontFamily: 'Arimo', fontSize: 15, fontWeight: FontWeight.w700),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Start learning'))),
+            SizedBox(width: 16),
+            Icon(Icons.arrow_forward_rounded, size: 20),
+          ],
+        ),
+      ),
+    );
+    return isMobile
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [meta, const SizedBox(height: 16), button],
+          )
+        : Row(children: [const Expanded(child: meta), const SizedBox(width: 20), button]);
   }
 
   Widget _buildStats(bool isMobile) {
