@@ -429,47 +429,6 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  void _openFullscreenImage(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      barrierColor: const Color(0xF2000000),
-      builder: (dialogContext) {
-        return Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Image.asset(
-                  'laptop-hacking.gif',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Positioned(
-              top: 24,
-              right: 24,
-              child: SafeArea(
-                child: Material(
-                  color: Colors.transparent,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                    tooltip: 'Close full screen',
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   // -------------------------------------------------------------------------
   // Overview
   // -------------------------------------------------------------------------
@@ -550,100 +509,31 @@ class _AppShellState extends State<AppShell> {
       ],
     );
 
-    final gifContent = Semantics(
+    final gif = Semantics(
       image: true,
       label: 'Laptop hacking animation',
-      child: GestureDetector(
-        onTap: () => _openFullscreenImage(context),
-        child: Container(
-          width: isMobile ? double.infinity : 300,
-          height: isMobile ? 235 : 220,
-          constraints: isMobile ? null : const BoxConstraints(maxWidth: 420),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius:
-                isMobile ? BorderRadius.zero : BorderRadius.circular(16),
-            border: Border(
-              top: const BorderSide(color: lineColor),
-              bottom: const BorderSide(color: lineColor),
-              left: isMobile ? BorderSide.none : const BorderSide(color: lineColor),
-              right: isMobile ? BorderSide.none : const BorderSide(color: lineColor),
+      child: Container(
+        width: isMobile ? 240 : 220,
+        height: isMobile ? 240 : 220,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: lineColor),
+          color: surfaceColor,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 16,
+              offset: Offset(0, 4),
             ),
-            color: surfaceColor,
-            boxShadow: isMobile
-                ? null
-                : const [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 16,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                'laptop-hacking.gif',
-                fit: BoxFit.cover,
-              ),
-              Positioned(
-                right: 12,
-                bottom: 12,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xCC0B0D10),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: lineColor),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.fullscreen_rounded,
-                        size: 14,
-                        color: textSecondary,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Full screen',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          ],
+        ),
+        child: Image.asset(
+          'laptop-hacking.gif',
+          fit: BoxFit.contain,
         ),
       ),
     );
-
-    final gif = isMobile
-        ? LayoutBuilder(
-            builder: (context, constraints) {
-              final fullWidth = constraints.maxWidth + 44;
-              return SizedBox(
-                width: fullWidth,
-                height: 235,
-                child: OverflowBox(
-                  minWidth: fullWidth,
-                  maxWidth: fullWidth,
-                  minHeight: 235,
-                  maxHeight: 235,
-                  alignment: Alignment.center,
-                  child: gifContent,
-                ),
-              );
-            },
-          )
-        : gifContent;
 
     if (isMobile) {
       return Column(
@@ -651,7 +541,7 @@ class _AppShellState extends State<AppShell> {
         children: [
           copy,
           const SizedBox(height: 20),
-          gif,
+          Center(child: gif),
         ],
       );
     }
