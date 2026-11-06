@@ -1387,15 +1387,11 @@
         {
           number: "01",
           title: "Missing MFA",
-          kicker: "Initial access",
-          summary:
-            "Attackers signed in to a remote-access portal with stolen credentials. The portal asked for a password, but nothing else.",
-          weakness:
-            "The remote-access portal only required a username and password.",
-          risk:
-            "A password stolen through phishing or reuse was enough to let an outsider into the network.",
-          solution:
-            "Require multi-factor authentication, ideally a phishing-resistant security key rather than a code that can be intercepted.",
+          kicker: "",
+          summary: "",
+          weakness: "",
+          risk: "",
+          solution: "",
         },
         {
           number: "02",
@@ -1413,14 +1409,11 @@
         {
           number: "03",
           title: "Poor Network Separation",
-          kicker: "Lateral movement",
-          summary:
-            "Because the internal network was largely flat, the attackers could move from one system to another without meeting a real boundary.",
-          weakness:
-            "Unnecessary connections can let an attacker reach other systems.",
-          risk: "One infected device could lead to a much wider outage.",
-          solution:
-            "Separate important systems from each other and allow only the connections each one actually needs.",
+          kicker: "",
+          summary: "",
+          weakness: "",
+          risk: "",
+          solution: "",
         },
       ];
 
@@ -1453,6 +1446,8 @@
         lessonKicker.textContent = lesson.kicker.toUpperCase();
         lessonTitle.textContent = lesson.title;
         lessonSummary.textContent = lesson.summary;
+        lessonKicker.hidden = !lesson.kicker;
+        lessonSummary.hidden = !lesson.summary;
         lessonWeakness.textContent = lesson.weakness;
         lessonRisk.textContent = lesson.risk;
         lessonSolution.textContent = lesson.solution;
@@ -1465,7 +1460,7 @@
           lessonNext.dataset.lesson = String(page + 1);
         } else {
           lessonNext.hidden = true;
-          lessonComplete.hidden = false;
+          lessonComplete.hidden = !lesson.summary;
         }
       }
 

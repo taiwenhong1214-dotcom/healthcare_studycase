@@ -73,18 +73,12 @@ const lessons = [
     title: 'Missing MFA',
     navLabel: 'MFA',
     icon: Icons.smartphone_rounded,
-    kicker: 'Initial access',
-    blurb: 'One stolen password was all it took.',
-    summary:
-        'Attackers signed in to a remote-access portal with stolen credentials. '
-        'The portal asked for a password, but nothing else.',
-    weakness: 'The remote-access portal only required a username and password.',
-    risk:
-        'A password stolen through phishing or reuse was enough to let an '
-        'outsider into the network.',
-    solution:
-        'Require multi-factor authentication, ideally a phishing-resistant '
-        'security key rather than a code that can be intercepted.',
+    kicker: '',
+    blurb: '',
+    summary: '',
+    weakness: '',
+    risk: '',
+    solution: '',
   ),
   Lesson(
     number: '02',
@@ -109,17 +103,12 @@ const lessons = [
     title: 'Poor Network Separation',
     navLabel: 'Network',
     icon: Icons.hub_rounded,
-    kicker: 'Lateral movement',
-    blurb: 'A flat network let the breach spread.',
-    summary:
-        'Because the internal network was largely flat, the attackers could '
-        'move from one system to another without meeting a real boundary.',
-    weakness:
-        'Unnecessary connections can let an attacker reach other systems.',
-    risk: 'One infected device could lead to a much wider outage.',
-    solution:
-        'Separate important systems from each other and allow only the '
-        'connections each one actually needs.',
+    kicker: '',
+    blurb: '',
+    summary: '',
+    weakness: '',
+    risk: '',
+    solution: '',
   ),
 ];
 
@@ -703,7 +692,7 @@ class _AppShellState extends State<AppShell> {
           ],
         ),
         SizedBox(height: isMobile ? 28 : 36),
-        Text(
+        if (lesson.kicker.isNotEmpty) Text(
           lesson.kicker.toUpperCase(),
           style: const TextStyle(
             fontSize: 12,
@@ -725,7 +714,7 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
         const SizedBox(height: 14),
-        ConstrainedBox(
+        if (lesson.summary.isNotEmpty) ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 620),
           child: Text(
             lesson.summary,
@@ -743,9 +732,9 @@ class _AppShellState extends State<AppShell> {
         const Divider(height: 1, thickness: 1, color: lineColor),
         _buildFix(lesson.solution, isMobile),
         SizedBox(height: isMobile ? 36 : 44),
-        if (isLastLesson)
-          _buildCompletion()
-        else
+        if (isLastLesson && lesson.summary.isNotEmpty)
+          _buildCompletion(),
+        if (!isLastLesson)
           _buildNextLesson(lessons[_selectedPage], isMobile),
         const SizedBox(height: 32),
         const _FooterSection(),
