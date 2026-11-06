@@ -41,6 +41,8 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('No — always patch'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('No — always patch'));
     await tester.pumpAndSettle();
 

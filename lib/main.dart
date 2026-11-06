@@ -13,15 +13,15 @@ import 'package:url_launcher/url_launcher.dart';
 // red and amber appear only where the content itself is about risk.
 // ---------------------------------------------------------------------------
 
-const bgColor = Color(0xFF0B0D10);
-const surfaceColor = Color(0xFF12161C);
-const raisedColor = Color(0xFF171C24);
-const lineColor = Color(0xFF232A34);
+const bgColor = Color(0xFF0A1118);
+const surfaceColor = Color(0xFF111E29);
+const raisedColor = Color(0xFF182936);
+const lineColor = Color(0xFF263946);
 const lineStrongColor = Color(0xFF323B48);
 
 const textPrimary = Color(0xFFF1F4F6);
 const textSecondary = Color(0xFFA9B3BF);
-const textDim = Color(0xFF7A8593);
+const textDim = Color(0xFF94A5B5);
 
 const accentColor = Color(0xFF6FD3B5);
 const accentInk = Color(0xFF0B211B);
@@ -237,7 +237,7 @@ class _AppShellState extends State<AppShell> {
             child: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: _selectedPage == 0 ? 880 : 720,
+                  maxWidth: _selectedPage == 0 ? 1080 : 800,
                 ),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
@@ -483,7 +483,7 @@ class _AppShellState extends State<AppShell> {
         Text(
           'The Change Healthcare ransomware attack',
           style: TextStyle(
-            fontSize: isMobile ? 32 : 44,
+            fontSize: isMobile ? 34 : 48,
             height: 1.12,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.8,
@@ -505,7 +505,23 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
         const SizedBox(height: 18),
-        const Text('3 lessons · About 8 minutes', style: _smallStyle),
+        Wrap(
+          spacing: 18,
+          runSpacing: 14,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: () => _goTo(1),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              label: const Text('Start learning'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const Text('3 lessons · About 8 minutes', style: _smallStyle),
+          ],
+        ),
       ],
     );
 
@@ -513,8 +529,8 @@ class _AppShellState extends State<AppShell> {
       image: true,
       label: 'Laptop hacking animation',
       child: Container(
-        width: isMobile ? 240 : 220,
-        height: isMobile ? 240 : 220,
+        width: isMobile ? 180 : 240,
+        height: isMobile ? 180 : 240,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -535,24 +551,26 @@ class _AppShellState extends State<AppShell> {
       ),
     );
 
-    if (isMobile) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          copy,
-          const SizedBox(height: 20),
-          Center(child: gif),
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: copy),
-        const SizedBox(width: 48),
-        gif,
-      ],
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 22 : 36),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF17343A), surfaceColor, Color(0xFF142336)],
+        ),
+        border: Border.all(color: lineStrongColor),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [copy, const SizedBox(height: 24), Center(child: gif)],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [Expanded(child: copy), const SizedBox(width: 32), gif],
+            ),
     );
   }
 
@@ -565,11 +583,10 @@ class _AppShellState extends State<AppShell> {
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: isMobile ? 18 : 22),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: lineColor),
-          bottom: BorderSide(color: lineColor),
-        ),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: lineColor),
       ),
       child: Row(
         children: [
@@ -646,16 +663,11 @@ class _AppShellState extends State<AppShell> {
           style: _bodyStyle,
         ),
         const SizedBox(height: 20),
-        Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: lineColor)),
-          ),
-          child: Column(
-            children: [
-              for (var i = 0; i < lessons.length; i++)
-                _buildLessonRow(lessons[i], i + 1, isMobile),
-            ],
-          ),
+        Column(
+          children: [
+            for (var i = 0; i < lessons.length; i++)
+              _buildLessonRow(lessons[i], i + 1, isMobile),
+          ],
         ),
       ],
     );
@@ -665,17 +677,28 @@ class _AppShellState extends State<AppShell> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(16),
         onTap: () => _goTo(page),
         hoverColor: const Color(0x08FFFFFF),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 18),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: lineColor)),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: EdgeInsets.all(isMobile ? 16 : 22),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: lineColor),
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: 36,
+              Container(
+                width: 38,
+                height: 38,
+                margin: const EdgeInsets.only(right: 16),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accentSurface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Text(
                   lesson.number,
                   style: const TextStyle(
@@ -703,8 +726,6 @@ class _AppShellState extends State<AppShell> {
                     const SizedBox(height: 2),
                     Text(
                       lesson.blurb,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
                         height: 1.4,
@@ -1028,9 +1049,11 @@ class _QuestionSectionState extends State<_QuestionSection> {
     final isCorrect = _selected == 0;
 
     return Container(
-      padding: const EdgeInsets.only(top: 28),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: lineColor)),
+      padding: EdgeInsets.all(isMobile ? 22 : 28),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: lineColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
