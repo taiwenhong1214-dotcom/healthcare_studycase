@@ -518,32 +518,42 @@ class _AppShellState extends State<AppShell> {
       ],
     );
 
-    if (isMobile) return copy;
+    final gif = Semantics(
+      image: true,
+      label: 'Laptop hacking animation',
+      child: Container(
+        width: isMobile ? double.infinity : 210,
+        height: isMobile ? 180 : 158,
+        constraints: isMobile ? const BoxConstraints(maxWidth: 420) : null,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: lineColor),
+        ),
+        child: Image.asset(
+          'laptop-hacking.gif',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          copy,
+          const SizedBox(height: 20),
+          gif,
+        ],
+      );
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: copy),
         const SizedBox(width: 48),
-        Semantics(
-          image: true,
-          label: 'Laptop hacking animation',
-          child: Container(
-            width: 210,
-            height: 158,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: lineColor),
-            ),
-            child: Image.asset(
-              'laptop-hacking.gif',
-              width: 210,
-              height: 158,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
+        gif,
       ],
     );
   }
