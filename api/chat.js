@@ -219,7 +219,7 @@ function getKnowledgeBaseReply(userQuery) {
       'The Change Healthcare ransomware attack caused unprecedented nationwide disruption and staggering financial losses.',
       '',
       '• Healthcare Gridlock: Over one-third of US healthcare claims were stalled, forcing pharmacies to front medication costs and clinics into cash crunches.',
-      '• Widespread Data Exposure: Sensitive medical, personal, and financial records of over 100 million individuals were stolen and leaked.',
+      '• Widespread Data Exposure: Sensitive medical, personal, and financial records of about 192.7 million people were stolen, the largest US healthcare data breach on record (figure filed with HHS in July 2025).',
       '• Financial Recovery Costs: UnitedHealth Group paid a $22M ransom and reported billions in total operational disruption and remediation expenses.',
     ].join('\n');
   }
@@ -240,7 +240,7 @@ function getKnowledgeBaseReply(userQuery) {
     '',
     '• Incident & Threat Actor: The cybercrime syndicate ALPHV/BlackCat breached systems using stolen credentials on a remote portal lacking MFA.',
     '• Massive Disruption: Pharmacies could not verify insurance or fill prescriptions, doctors could not bill insurance claims, and sensitive patient data was stolen.',
-    '• Heavy Financial Toll: UnitedHealth Group paid a $22M ransom, faced over $1B in cleanup costs, and exposed data of an estimated 1 in 3 Americans.',
+    '• Heavy Financial Toll: UnitedHealth Group paid a $22M ransom, faced over $1B in cleanup costs, and exposed data of about 192.7 million people.',
     '• Key Takeaway: Healthcare organizations must enforce universal MFA, continuous vulnerability patching, and Zero Trust network segmentation.',
   ].join('\n');
 }

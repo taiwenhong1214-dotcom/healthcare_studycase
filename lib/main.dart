@@ -208,9 +208,18 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth <= 720;
+    // Wide screens get a top bar like a normal website. Phones and narrow
+    // tablets keep the bottom bar, which is easier to reach with a thumb.
+    final useTopBar = screenWidth >= 960;
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: useTopBar
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(64),
+              child: _buildTopBar(),
+            )
+          : null,
       body: DefaultTextStyle(
         style: const TextStyle(
           fontFamily: 'Arimo',
@@ -249,9 +258,7 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
       ),
-      floatingActionButton: _buildAssistantFloatingButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: _buildBottomNav(isMobile),
+      bottomNavigationBar: useTopBar ? null : _buildBottomNav(isMobile),
     );
   }
 
@@ -259,41 +266,186 @@ class _AppShellState extends State<AppShell> {
   // Navigation
   // -------------------------------------------------------------------------
 
-  Widget _buildAssistantFloatingButton() {
+  Widget _buildTopBar() {
     return Container(
+      decoration: const BoxDecoration(
+        color: bgColor,
+        border: Border(bottom: BorderSide(color: lineColor)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1080),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Row(
+                children: [
+                  // The brand gives up space first, so the links never
+                  // overflow on a narrower window.
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _buildBrand(),
+                    ),
+                  ),
+                  _topLink(page: 0, label: 'Home'),
+                  for (var i = 0; i < lessons.length; i++)
+                    _topLink(
+                      page: i + 1,
+                      label: lessons[i].navLabel,
+                      number: lessons[i].number,
+                      tooltip: lessons[i].title,
+                    ),
+                  const SizedBox(width: 20),
+                  Tooltip(
+                    message: 'Ask the study assistant',
+                    child: OutlinedButton.icon(
+                      onPressed: _openAssistant,
+                      icon: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 17,
+                      ),
+                      label: const Text('Ask assistant'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: accentColor,
+                        side: const BorderSide(color: accentLine),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        textStyle: const TextStyle(
+                          fontFamily: 'Arimo',
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBrand() {
+    return InkWell(
+      onTap: () => _goTo(0),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: accentSurface,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: accentLine),
+              ),
+              child: const Icon(
+                Icons.shield_outlined,
+                size: 18,
+                color: accentColor,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Change Healthcare',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.2,
+                      fontWeight: FontWeight.w700,
+                      color: textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'Security case study',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.3,
+                      color: textDim,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _topLink({
+    required int page,
+    required String label,
+    String? number,
+    String? tooltip,
+  }) {
+    final selected = _selectedPage == page;
+    final link = Container(
+      height: 64,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x336FD3B5),
-            blurRadius: 16,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
+        border: Border(
+          bottom: BorderSide(
+            color: selected ? accentColor : Colors.transparent,
+            width: 2,
           ),
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: _openAssistant,
-        tooltip: 'Ask the study assistant',
-        backgroundColor: surfaceColor,
-        foregroundColor: accentColor,
-        elevation: 0,
-        highlightElevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: accentLine, width: 1.2),
-        ),
-        child: const Icon(
-          Icons.chat_bubble_outline_rounded,
-          size: 24,
-          color: accentColor,
         ),
       ),
+      child: TextButton(
+        onPressed: () => _goTo(page),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          foregroundColor: selected ? textPrimary : textSecondary,
+          overlayColor: Colors.transparent,
+          textStyle: TextStyle(
+            fontFamily: 'Arimo',
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (number != null) ...[
+              Text(
+                number,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? accentColor : textDim,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(label),
+          ],
+        ),
+      ),
+    );
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: tooltip == null ? link : Tooltip(message: tooltip, child: link),
     );
   }
 
@@ -333,6 +485,14 @@ class _AppShellState extends State<AppShell> {
                         icon: lessons[i].icon,
                       ),
                     ),
+                  Expanded(
+                    child: _navButton(
+                      label: 'Ask',
+                      tooltip: 'Ask the study assistant',
+                      icon: Icons.chat_bubble_outline_rounded,
+                      onPressed: _openAssistant,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -342,57 +502,67 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  /// A bottom bar item. Pass [page] to switch pages, or [onPressed] for an
+  /// action such as opening the assistant.
   Widget _navButton({
-    required int page,
+    int? page,
     required String label,
     required String tooltip,
     required IconData icon,
+    VoidCallback? onPressed,
   }) {
-    final selected = _selectedPage == page;
+    final selected = page != null && _selectedPage == page;
     return Semantics(
       selected: selected,
       button: true,
       child: Tooltip(
         message: tooltip,
         child: TextButton(
-          onPressed: () => _goTo(page),
+          onPressed: onPressed ?? () => _goTo(page!),
           style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 48),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            minimumSize: const Size(0, 52),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             foregroundColor: selected ? accentColor : textDim,
             overlayColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
           ),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-            decoration: BoxDecoration(
-              color: selected ? accentSurface : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 20, color: selected ? accentColor : textDim),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Arimo',
-                    fontSize: 11,
-                    height: 1.2,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? accentColor : textSecondary,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Only the icon gets the highlight pill, so the selected tab
+              // stands out without the whole cell turning into a block.
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                curve: Curves.easeOut,
+                width: 52,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: selected ? accentSurface : Colors.transparent,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: selected ? accentLine : Colors.transparent,
                   ),
                 ),
-              ],
-            ),
+                child: Icon(
+                  icon,
+                  size: 19,
+                  color: selected ? accentColor : textDim,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Arimo',
+                  fontSize: 11,
+                  height: 1.2,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? accentColor : textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -497,7 +667,6 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
         ),
-
       ],
     );
 
@@ -505,8 +674,8 @@ class _AppShellState extends State<AppShell> {
       image: true,
       label: 'Laptop hacking animation',
       child: Container(
-        width: isMobile ? 144 : 200,
-        height: isMobile ? 144 : 200,
+        width: stacked ? 120 : 200,
+        height: stacked ? 120 : 200,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -523,10 +692,7 @@ class _AppShellState extends State<AppShell> {
         // The GIF changes every frame. Its own repaint boundary stops each
         // frame from redrawing the rest of the page, which made scrolling lag.
         child: RepaintBoundary(
-          child: Image.asset(
-            'laptop-hacking.gif',
-            fit: BoxFit.contain,
-          ),
+          child: Image.asset('laptop-hacking.gif', fit: BoxFit.contain),
         ),
       ),
     );
@@ -548,12 +714,18 @@ class _AppShellState extends State<AppShell> {
           if (stacked)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [copy, const SizedBox(height: 20), Center(child: gif)],
+              // Picture first, then the text, so the card reads top to
+              // bottom without the GIF interrupting the paragraph and button.
+              children: [gif, const SizedBox(height: 20), copy],
             )
           else
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Expanded(child: copy), const SizedBox(width: 40), gif],
+              children: [
+                Expanded(child: copy),
+                const SizedBox(width: 40),
+                gif,
+              ],
             ),
           const SizedBox(height: 28),
           const Divider(height: 1, color: lineColor),
@@ -570,7 +742,9 @@ class _AppShellState extends State<AppShell> {
       children: [
         Icon(Icons.schedule_rounded, size: 16, color: accentColor),
         SizedBox(width: 8),
-        Flexible(child: Text('3 lessons · About 8 minutes', style: _smallStyle)),
+        Flexible(
+          child: Text('3 lessons · About 8 minutes', style: _smallStyle),
+        ),
       ],
     );
     final button = SizedBox(
@@ -582,13 +756,24 @@ class _AppShellState extends State<AppShell> {
           backgroundColor: accentColor,
           foregroundColor: accentInk,
           padding: const EdgeInsets.symmetric(horizontal: 22),
-          textStyle: const TextStyle(fontFamily: 'Arimo', fontSize: 15, fontWeight: FontWeight.w700),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(
+            fontFamily: 'Arimo',
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Start learning'))),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('Start learning'),
+              ),
+            ),
             SizedBox(width: 16),
             Icon(Icons.arrow_forward_rounded, size: 20),
           ],
@@ -600,14 +785,20 @@ class _AppShellState extends State<AppShell> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [meta, const SizedBox(height: 16), button],
           )
-        : Row(children: [const Expanded(child: meta), const SizedBox(width: 20), button]);
+        : Row(
+            children: [
+              const Expanded(child: meta),
+              const SizedBox(width: 20),
+              button,
+            ],
+          );
   }
 
   Widget _buildStats(bool isMobile) {
     const items = [
-      ('1 in 3', 'Americans affected'),
+      ('192.7M', 'People affected'),
       (r'$22M', 'Ransom paid'),
-      ('100M+', 'Records exposed'),
+      ('Feb 2024', 'Attack began'),
     ];
 
     return Container(
@@ -725,17 +916,18 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
         const SizedBox(height: 14),
-        if (lesson.summary.isNotEmpty) ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620),
-          child: Text(
-            lesson.summary,
-            style: TextStyle(
-              fontSize: isMobile ? 15 : 16.5,
-              height: 1.7,
-              color: textSecondary,
+        if (lesson.summary.isNotEmpty)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Text(
+              lesson.summary,
+              style: TextStyle(
+                fontSize: isMobile ? 15 : 16.5,
+                height: 1.7,
+                color: textSecondary,
+              ),
             ),
           ),
-        ),
         SizedBox(height: isMobile ? 32 : 40),
         if (lesson.weakness.isEmpty)
           _buildComingSoon()
@@ -747,10 +939,8 @@ class _AppShellState extends State<AppShell> {
           _buildFix(lesson.solution, isMobile),
         ],
         SizedBox(height: isMobile ? 36 : 44),
-        if (isLastLesson && lesson.summary.isNotEmpty)
-          _buildCompletion(),
-        if (!isLastLesson)
-          _buildNextLesson(lessons[_selectedPage], isMobile),
+        if (isLastLesson && lesson.summary.isNotEmpty) _buildCompletion(),
+        if (!isLastLesson) _buildNextLesson(lessons[_selectedPage], isMobile),
         const SizedBox(height: 32),
         const _FooterSection(),
       ],
