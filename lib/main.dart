@@ -235,9 +235,14 @@ class _AppShellState extends State<AppShell> {
                     isMobile ? 22 : 40,
                     isMobile ? 56 : 80,
                   ),
-                  child: _selectedPage == 0
-                      ? _buildHome(isMobile)
-                      : _buildLessonPage(isMobile),
+                  // SingleChildScrollView does not add a repaint boundary
+                  // (ListView does). Without one, every scroll frame redraws
+                  // the whole page instead of just moving it.
+                  child: RepaintBoundary(
+                    child: _selectedPage == 0
+                        ? _buildHome(isMobile)
+                        : _buildLessonPage(isMobile),
+                  ),
                 ),
               ),
             ),
@@ -515,9 +520,13 @@ class _AppShellState extends State<AppShell> {
             ),
           ],
         ),
-        child: Image.asset(
-          'laptop-hacking.gif',
-          fit: BoxFit.contain,
+        // The GIF changes every frame. Its own repaint boundary stops each
+        // frame from redrawing the rest of the page, which made scrolling lag.
+        child: RepaintBoundary(
+          child: Image.asset(
+            'laptop-hacking.gif',
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
@@ -692,17 +701,19 @@ class _AppShellState extends State<AppShell> {
           ],
         ),
         SizedBox(height: isMobile ? 28 : 36),
-        if (lesson.kicker.isNotEmpty) Text(
-          lesson.kicker.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 12,
-            height: 1.4,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-            color: accentColor,
+        if (lesson.kicker.isNotEmpty) ...[
+          Text(
+            lesson.kicker.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.4,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: accentColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
+        ],
         Text(
           lesson.title,
           style: TextStyle(
@@ -726,11 +737,15 @@ class _AppShellState extends State<AppShell> {
           ),
         ),
         SizedBox(height: isMobile ? 32 : 40),
-        _buildDetail('Weakness', lesson.weakness, warningColor, isMobile),
-        const Divider(height: 1, thickness: 1, color: lineColor),
-        _buildDetail('Risk', lesson.risk, dangerColor, isMobile),
-        const Divider(height: 1, thickness: 1, color: lineColor),
-        _buildFix(lesson.solution, isMobile),
+        if (lesson.weakness.isEmpty)
+          _buildComingSoon()
+        else ...[
+          _buildDetail('Weakness', lesson.weakness, warningColor, isMobile),
+          const Divider(height: 1, thickness: 1, color: lineColor),
+          _buildDetail('Risk', lesson.risk, dangerColor, isMobile),
+          const Divider(height: 1, thickness: 1, color: lineColor),
+          _buildFix(lesson.solution, isMobile),
+        ],
         SizedBox(height: isMobile ? 36 : 44),
         if (isLastLesson && lesson.summary.isNotEmpty)
           _buildCompletion(),
@@ -805,6 +820,31 @@ class _AppShellState extends State<AppShell> {
                 height: 1.7,
                 color: textPrimary,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shown while a teammate is still writing this lesson, so the page does
+  /// not show empty Weakness / Risk / Fix headings.
+  Widget _buildComingSoon() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: lineColor),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.edit_note_rounded, size: 20, color: textDim),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'This lesson is still being written. Check back soon.',
+              style: _bodyStyle,
             ),
           ),
         ],
