@@ -1,0 +1,683 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>BCC1344 Exam Prep</title>
+<style>
+@page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10.3pt; line-height: 1.45; color:#1a1a1a; }
+h1 { font-size: 21pt; margin: 0 0 4px; color:#1f3a7a; }
+h2 { font-size: 14pt; color:#fff; background:#1f3a7a; padding:6px 10px; margin:22px 0 10px; page-break-after: avoid; }
+h3 { font-size: 11pt; margin: 14px 0 4px; color:#1f3a7a; }
+.q { border-left: 4px solid #1f3a7a; background:#f2f5fb; padding:7px 10px; margin:14px 0 4px; page-break-inside: avoid; page-break-after: avoid;}
+.q b.num { color:#1f3a7a; }
+.mk { float:right; font-weight:bold; color:#555; }
+.a { border-left: 4px solid #2e8b57; padding:4px 10px 4px 12px; margin:0 0 10px; }
+.a::before { break-after: avoid; content:"MODEL ANSWER"; display:block; font-size:8pt; font-weight:bold; color:#2e8b57; letter-spacing:1px; }
+pre { font-family: "DejaVu Sans Mono", Consolas, monospace; font-size:8.8pt; background:#272b33; color:#f1f1f1; padding:7px 9px; border-radius:4px; white-space:pre-wrap; margin:5px 0; }
+pre.out { background:#fff8e6; color:#333; border:1px solid #e6cf8f; }
+code { font-family: "DejaVu Sans Mono", monospace; font-size:9pt; background:#eef0f4; padding:0 3px; border-radius:2px; }
+table { border-collapse: collapse; width:100%; margin:6px 0; font-size:9.3pt; page-break-inside: avoid; }
+th, td { border:1px solid #b9c2d4; padding:4px 6px; text-align:left; vertical-align:top; }
+th { background:#dfe6f3; }
+.tip { background:#fff1f0; border:1px solid #f0b4ae; padding:7px 10px; margin:8px 0; border-radius:4px; page-break-inside: avoid; }
+.hot { color:#c0392b; font-weight:bold; }
+ul, ol { margin: 3px 0 3px 0; padding-left: 20px; }
+li { margin: 1px 0; }
+.cover { text-align:left; padding-top:10px; }
+.small { font-size:8.8pt; color:#555; }
+.pb { page-break-before: always; }
+</style></head><body>
+
+<div class="cover">
+<h1>BCC1344 Programming Data Analysis</h1>
+<div style="font-size:13pt;color:#444">Final Exam Prediction Paper — Structured, Short-Answer &amp; Coding Questions with Model Answers</div>
+<p class="small">Based on: Ch1 Introduction to Data Science · Ch2 Python Programming (Colab) · Ch3 Python Libraries · Ch5 NumPy &amp; Data Transformation · Lab Assessment 1 (Pandas &amp; Data Preparation). All code outputs in this paper were executed and checked (Python 3, NumPy 2.x, pandas).</p>
+</div>
+
+<h2>0. How to Use This Paper</h2>
+<table>
+<tr><th>Topic</th><th>Likelihood</th><th>What they usually ask</th></tr>
+<tr><td>Ch1 Data preparation (Collection / Wrangling / Management)</td><td class="hot">Very high</td><td>Define + 2 activities + example for each step</td></tr>
+<tr><td>Ch1 Four types of analysis</td><td class="hot">Very high</td><td>Define each, write one question per type for a scenario</td></tr>
+<tr><td>Ch1 Anatomy of data (variable types, data types, metadata)</td><td class="hot">Very high</td><td>Classify columns of a given table</td></tr>
+<tr><td>Ch2 if/elif/else, loops, list, dict</td><td class="hot">Very high</td><td>Trace output, write short program</td></tr>
+<tr><td>Ch2 Class / object / method / self</td><td>High</td><td>Define terms, write a small class</td></tr>
+<tr><td>Ch3 NumPy vs Pandas vs Matplotlib</td><td>High</td><td>Purpose, import statement, how they work together</td></tr>
+<tr><td>Ch5 NumPy arrays (create, attributes, indexing, vectorised maths, aggregation)</td><td class="hot">Very high</td><td>Predict output, write code</td></tr>
+<tr><td>Ch5 Data transformation in pandas (new column, rename, filter, sort, apply, groupby, get_dummies, pd.cut, normalise)</td><td class="hot">Very high</td><td>Write one-liners for a given DataFrame</td></tr>
+<tr><td>Lab 1 workflow (load → inspect → clean → describe → groupby → reflect)</td><td class="hot">Very high</td><td>Full coding question + interpretation + reflection</td></tr>
+<tr><td>Ch1 STAR framework, population vs sample, storytelling</td><td>Medium</td><td>Short answer, 3–4 marks</td></tr>
+</table>
+<div class="tip"><b>Exam technique.</b> Structured answers score by points, so write one point per line: <i>term → meaning → example</i>. For coding questions, always write the <code>import</code> line, use the exact variable name in the question (e.g. <code>df</code>), and add a short comment per step — markers give method marks even if one line is wrong. Note: Chapter 4 (Pandas) slides were not in the material given; pandas questions here follow Lab 1 and the pandas code shown in Chapter 5.</div>
+
+<!-- ===================================================== -->
+<h2>SECTION A — Chapter 1: Introduction to Data Science</h2>
+
+<div class="q"><b class="num">A1.</b> (a) Differentiate between <i>data</i> and <i>data science</i>. (b) Data science is formed by combining three fields. Name and explain each field using a student performance analysis example. <span class="mk">[2 + 6 = 8]</span></div>
+<div class="a">
+(a) <b>Data</b> is raw facts and figures (numbers, text, records) collected from a source, e.g. students' marks. <b>Data science</b> is the process of using statistics, programming and domain knowledge to turn that data into insights that answer a question or support a decision. Big data = a large combination of data from many sources.<br>
+(b)
+<ol>
+<li><b>Statistics</b> – to understand the data. E.g. calculate the average mark, pass rate and performance trend.</li>
+<li><b>Computer Science</b> – to process the data using code/tools. E.g. write Python code or build a Power BI dashboard of results.</li>
+<li><b>Domain Knowledge</b> – to understand the real problem. E.g. know what counts as a good or bad result in education (e.g. below 50 = fail, CGPA 3.5 = dean's list).</li>
+</ol>
+Combining all three = doing data science.
+</div>
+
+<div class="q"><b class="num">A2.</b> Explain the difference between a <i>population</i> and a <i>sample</i>. Give one example of each and state one limitation of using a sample. <span class="mk">[5]</span></div>
+<div class="a">
+<b>Population</b>: the entire group of interest. Example: all used-car owners in the United States.<br>
+<b>Sample</b>: a smaller subset chosen to represent the population. Example: used-car owners in Chattanooga, Tennessee.<br>
+We use samples because collecting data from the whole population is costly and slow.<br>
+<b>Limitation</b>: a sample will not be 100% accurate; if it is not representative (e.g. one city only), results can be biased and may not generalise to the population.
+</div>
+
+<div class="q"><b class="num">A3.</b> Describe the three main stages of the data science lifecycle. <span class="mk">[6]</span></div>
+<div class="a">
+The lifecycle starts with a <b>question/problem</b> to investigate (what are we trying to solve?), then:
+<ol>
+<li><b>Data Preparation</b> – collecting, cleaning, transforming, integrating and managing data so it is structured for analysis, storytelling and decision making.</li>
+<li><b>Data Analysis</b> – examining the prepared data to uncover valuable insights and guide decisions (descriptive, diagnostic, predictive, prescriptive).</li>
+<li><b>Data Storytelling</b> – communicating the insights through summaries, visualisations and narratives so the audience can understand and act.</li>
+</ol>
+</div>
+
+<div class="q"><b class="num">A4.</b> Refer to the table below.
+<table style="width:85%;background:#fff"><tr><th>student_id</th><th>name</th><th>age</th><th>gpa</th><th>favourite_pet</th><th>voted</th></tr>
+<tr><td>S001</td><td>Ali</td><td>20</td><td>3.25</td><td>Cat</td><td>True</td></tr>
+<tr><td>S002</td><td>Siti</td><td>21</td><td>3.80</td><td>Dog</td><td>False</td></tr></table>
+(a) Identify the observational unit, one variable and one value. (b) Classify each of <i>age, gpa, favourite_pet, voted</i> as quantitative or categorical, and state its data type. (c) Define metadata and give three examples for this table. <span class="mk">[3 + 4 + 4 = 11]</span></div>
+<div class="a">
+(a) Observational unit = <b>one student</b> (each row). Variable = e.g. <b>gpa</b> (a recorded characteristic, a column). Value = e.g. <b>3.25</b> (the attribute given to one student).<br>
+(b)
+<table><tr><th>Column</th><th>Variable type</th><th>Data type</th><th>Reason</th></tr>
+<tr><td>age</td><td>Quantitative</td><td>Integer</td><td>Numeric, maths makes sense, no decimal</td></tr>
+<tr><td>gpa</td><td>Quantitative</td><td>Float</td><td>Numeric with decimal point</td></tr>
+<tr><td>favourite_pet</td><td>Categorical</td><td>Text (string)</td><td>Category label, no maths</td></tr>
+<tr><td>voted</td><td>Categorical</td><td>Boolean</td><td>Only two possible values True/False</td></tr></table>
+(c) <b>Metadata</b> is data about data – information that describes and gives context to a dataset. Examples: variable names (<code>student_id, gpa…</code>), units of measurement (age in years, GPA on 4.0 scale), creation date of the file, number of missing values per column.
+</div>
+
+<div class="q"><b class="num">A5.</b> Data preparation consists of three major steps. For each step, define it, list two activities and give one example. <span class="mk">[9]</span></div>
+<div class="a">
+<table>
+<tr><th>Step</th><th>Definition</th><th>Activities</th><th>Example</th></tr>
+<tr><td>1. Data Collection</td><td>Gathering raw data from various sources</td><td>Import Excel/CSV files; extract from databases, Google Forms/surveys, websites, sensors/logs</td><td>Collect students' marks from Excel files, Google Forms and the LMS</td></tr>
+<tr><td>2. Data Wrangling</td><td>Making data clean, correct and usable</td><td>Remove duplicates; fix spelling; fill/remove missing values; convert text to numbers; rename columns; merge tables</td><td>Replace missing math scores with the column mean and drop duplicate student rows</td></tr>
+<tr><td>3. Data Management</td><td>How data is stored, organised, updated, protected and access-controlled</td><td>Save in folders/databases; proper file naming; backups; keep dataset versions</td><td>Store data in <code>Raw_Data / Clean_Data / Final_Data</code> folders</td></tr>
+</table>
+</div>
+
+<div class="q"><b class="num">A6.</b> A café owner has two years of daily sales data. Explain the four types of data analysis and write one suitable question for each type for this café. <span class="mk">[8]</span></div>
+<div class="a">
+<table><tr><th>Type</th><th>Asks</th><th>Café question</th></tr>
+<tr><td>Descriptive</td><td>What is happening / happened? (past or present)</td><td>What were the total sales of each category last month?</td></tr>
+<tr><td>Diagnostic</td><td>Why is it happening?</td><td>Why did drink sales drop in March compared with February?</td></tr>
+<tr><td>Predictive</td><td>What might happen? (future, based on past patterns)</td><td>How many cakes are likely to be sold in December?</td></tr>
+<tr><td>Prescriptive</td><td>What should we do? (action)</td><td>Should we spend 50% of the promotion budget on drinks in December and only 5% in February?</td></tr></table>
+</div>
+
+<div class="q"><b class="num">A7.</b> Explain data storytelling and its two essential components. <span class="mk">[4]</span></div>
+<div class="a">
+Data storytelling is the art of translating complex analysis into an easy-to-understand story that engages the audience and makes data relatable.
+<ul><li><b>Data visualisation</b> – presenting data in graphical format (e.g. bar chart of 5-star vs 1-star review counts instead of a raw table) so information is shown concisely.</li>
+<li><b>Data narrative</b> – the written/spoken explanation that tells the audience what the chart means and why it matters (e.g. "142 of 177 reviews are 5-star, so customers are highly satisfied").</li></ul>
+</div>
+
+<div class="q"><b class="num">A8.</b> Explain the STAR framework and apply it to a data cleaning task. <span class="mk">[5]</span></div>
+<div class="a">
+STAR (Situation – Task – Action – Result) is a structured way to explain a problem/project clearly and logically.
+<ul><li><b>Situation</b>: The student dataset was messy and inconsistent (missing marks, duplicate rows).</li>
+<li><b>Task</b>: Prepare the data for analysis.</li>
+<li><b>Action</b>: Filled missing values with the mean, fixed data formats, removed duplicates.</li>
+<li><b>Result</b>: Data became clean and ready for analysis/modelling.</li></ul>
+A related data science workflow: Collect → Clean → Analyse → Model → Visualise → Decide.
+</div>
+
+<!-- ===================================================== -->
+<h2 class="pb">SECTION B — Chapter 2: Python Programming</h2>
+
+<div class="q"><b class="num">B1.</b> Give four reasons Python is widely used in data analysis and four tasks it can perform in this course. Then differentiate Jupyter Notebook/Google Colab and an IDE. <span class="mk">[4 + 4 = 8]</span></div>
+<div class="a">
+Reasons: easy to learn and read; powerful and flexible; supported by many libraries (NumPy, pandas, Matplotlib); widely used in industry.<br>
+Tasks: load datasets, clean data, transform data, analyse data, visualise data, automate analysis tasks.<br>
+<b>Jupyter/Colab</b>: runs in a browser, code organised in cells, output appears directly below each cell → suited to data analysis and experimentation (write → run → observe → modify → run again).<br>
+<b>IDE</b> (VS Code, PyCharm): full development environment for writing whole programs/projects in files; output appears in a terminal.
+</div>
+
+<div class="q"><b class="num">B2.</b> State four Python syntax rules. Then identify the error type in each code below and correct it. <span class="mk">[4 + 6 = 10]</span>
+<pre>(i)  if mark >= 50
+         print("Pass")
+
+(ii) student_name = "Ali"
+     print(Student_name)
+
+(iii) if mark >= 50:
+      print("Pass")</pre></div>
+<div class="a">
+Rules: Python is case-sensitive; indentation defines code blocks (no <code>{ }</code>); statements do not need <code>;</code>; variable names start with a letter or <code>_</code>, no spaces (use <code>_</code>); <code>#</code> starts a comment.
+<table><tr><th></th><th>Error</th><th>Reason</th><th>Fix</th></tr>
+<tr><td>(i)</td><td>SyntaxError</td><td>Missing colon after the condition</td><td><code>if mark >= 50:</code></td></tr>
+<tr><td>(ii)</td><td>NameError</td><td><code>Student_name</code> ≠ <code>student_name</code> (case-sensitive)</td><td><code>print(student_name)</code></td></tr>
+<tr><td>(iii)</td><td>IndentationError</td><td>Body of <code>if</code> not indented</td><td>Indent <code>print("Pass")</code> by 4 spaces</td></tr></table>
+Debug steps: read the last line of the error → check spelling → brackets → quotation marks → indentation.
+</div>
+
+<div class="q"><b class="num">B3.</b> Write the output of the following code. <span class="mk">[4]</span>
+<pre>print(type(20))
+print(type(3.25))
+print(type("Ali"))
+print(type(True))</pre></div>
+<div class="a"><pre class="out">&lt;class 'int'&gt;
+&lt;class 'float'&gt;
+&lt;class 'str'&gt;
+&lt;class 'bool'&gt;</pre></div>
+
+<div class="q"><b class="num">B4.</b> Compare list, tuple, set and dictionary, giving an example of each. <span class="mk">[8]</span></div>
+<div class="a">
+<table><tr><th>Collection</th><th>Property</th><th>Example</th></tr>
+<tr><td>List</td><td>Ordered, changeable, allows duplicates</td><td><code>shopping = ["Bread", "Milk", "Eggs"]</code></td></tr>
+<tr><td>Tuple</td><td>Ordered, cannot be changed</td><td><code>point = (3, 5)</code></td></tr>
+<tr><td>Set</td><td>Stores unique values only (no duplicates)</td><td><code>programs = {"CS", "IT"}</code></td></tr>
+<tr><td>Dictionary</td><td>Key-value pairs, access by key</td><td><code>student = {"name": "Ali", "programme": "IT", "mark": 68}</code></td></tr></table>
+</div>
+
+<div class="q"><b class="num">B5.</b> Trace the output. <span class="mk">[6]</span>
+<pre>shopping = ["Bread", "Milk", "Eggs"]
+shopping.append("Rice")
+shopping[1] = "Tea"
+print(shopping)
+print(len(shopping), shopping[-1])
+print(shopping[1:3])
+
+student = {"name": "Ali", "mark": 68}
+student["mark"] = student["mark"] + 10
+student["grade"] = "B"
+print(student)
+print(len(student))</pre></div>
+<div class="a"><pre class="out">['Bread', 'Tea', 'Eggs', 'Rice']
+4 Rice
+['Tea', 'Eggs']
+{'name': 'Ali', 'mark': 78, 'grade': 'B'}
+3</pre>
+Key points: index starts at 0; <code>-1</code> = last item; slice <code>[1:3]</code> includes index 1, excludes 3; assigning a new key adds it to the dict.</div>
+
+<div class="q"><b class="num">B6.</b> Write a program that stores a mark and prints the grade: 80 and above "Excellent", 60–79 "Good", 50–59 "Pass", below 50 "Fail". <span class="mk">[5]</span></div>
+<div class="a"><pre>mark = 85
+
+if mark >= 80:
+    print("Excellent")
+elif mark >= 60:
+    print("Good")
+elif mark >= 50:
+    print("Pass")
+else:
+    print("Fail")</pre>
+Order matters: check the highest range first, because the first true condition wins.</div>
+
+<div class="q"><b class="num">B7.</b> (a) Differentiate a <code>for</code> loop and a <code>while</code> loop. (b) Trace the output of both programs. (c) What happens if line <code>n = n // 2</code> is removed? <span class="mk">[2 + 4 + 2 = 8]</span>
+<pre># Program 1
+total = 0
+for i in range(1, 6):
+    if i % 2 == 0:
+        continue
+    total = total + i
+print(total)
+
+# Program 2
+n = 10
+count = 0
+while n > 1:
+    n = n // 2
+    count = count + 1
+print(n, count)</pre></div>
+<div class="a">
+(a) <b>for</b>: iterates through a collection/range a known number of times. <b>while</b>: repeats as long as a condition is True; used when repetition depends on a condition.<br>
+(b) Program 1 adds only odd numbers 1+3+5. Program 2: 10→5→2→1 (3 iterations).
+<pre class="out">9
+1 3</pre>
+(c) <code>n</code> never changes, the condition <code>n &gt; 1</code> stays True forever → <b>infinite loop</b>. The condition must eventually become False.</div>
+
+<div class="q"><b class="num">B8.</b> Write a program that stores 5 marks in a list, uses a <code>for</code> loop to display each mark with "Pass"/"Fail", counts how many passed and prints the average. <span class="mk">[8]</span></div>
+<div class="a"><pre>marks = [70, 45, 60, 90, 38]
+pass_count = 0
+
+for m in marks:
+    if m >= 50:
+        print(m, "Pass")
+        pass_count = pass_count + 1
+    else:
+        print(m, "Fail")
+
+average = sum(marks) / len(marks)
+print("Number passed:", pass_count)
+print("Average:", average)</pre>
+<pre class="out">70 Pass
+45 Fail
+60 Pass
+90 Pass
+38 Fail
+Number passed: 3
+Average: 60.6</pre></div>
+
+<div class="q"><b class="num">B9.</b> Write a simple calculator that uses two numbers and prints addition, subtraction, multiplication and division. The program must not crash when the second number is 0. <span class="mk">[5]</span></div>
+<div class="a"><pre>num1 = 10
+num2 = 5
+
+print("Addition:", num1 + num2)
+print("Subtraction:", num1 - num2)
+print("Multiplication:", num1 * num2)
+
+if num2 != 0:
+    print("Division:", num1 / num2)    # 2.0  (/ always returns float)
+else:
+    print("Division: cannot divide by zero")</pre></div>
+
+<div class="q"><b class="num">B10.</b> Define class, object, attribute, method and <code>self</code>, using one example. <span class="mk">[5]</span></div>
+<div class="a">
+<ul><li><b>Class</b> – a blueprint/template for creating objects, e.g. <code>Student</code>.</li>
+<li><b>Object</b> – an instance created from a class, e.g. <code>student1 = Student("Ali", 68)</code>.</li>
+<li><b>Attribute</b> – data belonging to an object, e.g. <code>self.name</code>, <code>self.mark</code>.</li>
+<li><b>Method</b> – a function defined inside a class, e.g. <code>show_info()</code>, <code>is_pass()</code>.</li>
+<li><b>self</b> – refers to the current object, so a method can access that object's own attributes.</li></ul>
+<code>__init__</code> is the constructor: it runs automatically when an object is created and sets its attributes.</div>
+
+<div class="q"><b class="num">B11.</b> Write a class <code>Product</code> with attributes name, price and quantity, a method <code>total()</code> that returns price × quantity, and a method <code>show_info()</code>. Create two objects and call the methods. Also state why defining the class alone produces no output. <span class="mk">[8]</span></div>
+<div class="a"><pre>class Product:
+    def __init__(self, name, price, quantity):
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+
+    def total(self):
+        return self.price * self.quantity
+
+    def show_info(self):
+        print("Product:", self.name)
+        print("Total:", self.total())
+
+p1 = Product("Latte", 8.5, 2)
+p2 = Product("Cake", 6.0, 3)
+p1.show_info()
+p2.show_info()</pre>
+<pre class="out">Product: Latte
+Total: 17.0
+Product: Cake
+Total: 18.0</pre>
+Defining a class only creates the blueprint. Output appears only after an object is created and a method is called.</div>
+
+<!-- ===================================================== -->
+<h2 class="pb">SECTION C — Chapter 3: Python Libraries for Data Analysis</h2>
+
+<div class="q"><b class="num">C1.</b> What is a Python library? Explain three limitations of plain Python that make data analysis libraries necessary. <span class="mk">[5]</span></div>
+<div class="a">
+A library is a collection of ready-made code that saves time, reduces code and makes complex tasks easy (one function instead of 100 lines).<br>
+Plain Python: (1) is <b>slow for large data</b>; (2) has <b>no built-in table processing</b>; (3) has <b>no built-in chart system</b>. Libraries let us process large datasets, handle tables, compute fast and create charts/reports.</div>
+
+<div class="q"><b class="num">C2.</b> Complete the table for NumPy, Pandas and Matplotlib. <span class="mk">[9]</span></div>
+<div class="a"><table>
+<tr><th>Library</th><th>Purpose</th><th>Main structure / feature</th><th>Import</th></tr>
+<tr><td>NumPy (Numerical Python)</td><td>Fast mathematical computation, arrays and matrices, scientific computing</td><td><code>ndarray</code>; written in C → much faster than lists</td><td><code>import numpy as np</code></td></tr>
+<tr><td>Pandas</td><td>Data tables, cleaning, transformation, analysis</td><td><code>DataFrame</code> (rows + columns, like an Excel/database table)</td><td><code>import pandas as pd</code></td></tr>
+<tr><td>Matplotlib</td><td>Drawing charts, visualising data, creating graphs</td><td>Line, bar, histogram, pie, scatter</td><td><code>import matplotlib.pyplot as plt</code></td></tr></table>
+Later: Scikit-learn → machine learning.</div>
+
+<div class="q"><b class="num">C3.</b> Explain how the three libraries work together in a data analysis workflow, and write a short pipeline that loads <code>student.csv</code>, computes the average math score with NumPy and draws a bar chart of average math score by program. <span class="mk">[8]</span></div>
+<div class="a">
+Pandas → load &amp; clean data; NumPy → compute numbers; Matplotlib → draw charts. Together they form a complete analysis system.
+<pre>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("student.csv")                 # Pandas: load
+df = df.drop_duplicates()                       # Pandas: clean
+
+math = df["math_score"].to_numpy()              # NumPy: compute
+print("Average math:", np.mean(math))
+
+avg = df.groupby("program")["math_score"].mean()
+plt.bar(avg.index, avg.values)                  # Matplotlib: chart
+plt.title("Average Math Score by Program")
+plt.xlabel("Program")
+plt.ylabel("Average score")
+plt.show()</pre></div>
+
+<div class="q"><b class="num">C4.</b> State the most suitable chart for each situation. <span class="mk">[5]</span><br>
+(i) trend of monthly sales over a year (ii) compare total sales between categories (iii) distribution of exam marks (iv) share of each payment method (v) relationship between screen time and data usage</div>
+<div class="a">(i) line chart <code>plt.plot()</code> (ii) bar chart <code>plt.bar()</code> (iii) histogram <code>plt.hist()</code> (iv) pie chart <code>plt.pie()</code> (v) scatter plot <code>plt.scatter()</code></div>
+
+<div class="q"><b class="num">C5.</b> List four common beginner mistakes when using libraries and how to fix each. <span class="mk">[4]</span></div>
+<div class="a"><table><tr><th>Mistake</th><th>Fix</th></tr>
+<tr><td>Forget to install library (<code>ModuleNotFoundError</code>)</td><td><code>!pip install pandas</code> in Colab</td></tr>
+<tr><td>Wrong import name, e.g. <code>import panda</code></td><td><code>import pandas as pd</code></td></tr>
+<tr><td>File not found</td><td>Upload file to Colab / check path and spelling</td></tr>
+<tr><td>Wrong column name (<code>KeyError</code>)</td><td>Check <code>df.columns</code>; names are case-sensitive</td></tr></table></div>
+
+<!-- ===================================================== -->
+<h2 class="pb">SECTION D — Chapter 5: NumPy &amp; Data Transformation</h2>
+
+<div class="q"><b class="num">D1.</b> Explain three limitations of Python lists and how NumPy overcomes them. Illustrate with <code>[1,2,3] + [4,5,6]</code>. <span class="mk">[6]</span></div>
+<div class="a">
+<table><tr><th>Python list</th><th>NumPy array</th></tr>
+<tr><td>Slower for large data</td><td>Faster (implemented in C)</td></tr>
+<tr><td>Flexible types, memory-inefficient</td><td>Fixed data type, less memory</td></tr>
+<tr><td>No vectorised operations – manual loops needed</td><td>Vectorised: operation applies to every element at once</td></tr></table>
+<pre>[1, 2, 3] + [4, 5, 6]                        # list → [1, 2, 3, 4, 5, 6]  (joins)
+np.array([1, 2, 3]) + np.array([4, 5, 6])    # array → [5 7 9]           (adds element-wise)</pre>
+NumPy is also the foundation for Pandas, Scikit-learn and TensorFlow, and supports linear algebra.</div>
+
+<div class="q"><b class="num">D2.</b> Write the output. <span class="mk">[5]</span>
+<pre>import numpy as np
+print(np.zeros(3))
+print(np.ones(4))
+print(np.arange(6))
+print(np.arange(2, 11, 3))
+print(np.linspace(0, 10, 5))</pre></div>
+<div class="a"><pre class="out">[0. 0. 0.]
+[1. 1. 1. 1.]
+[0 1 2 3 4 5]
+[2 5 8]
+[ 0.   2.5  5.   7.5 10. ]</pre>
+<code>arange(start, stop, step)</code> excludes stop; <code>linspace(start, stop, num)</code> includes stop and gives <i>num</i> evenly spaced values. zeros/ones give floats.</div>
+
+<div class="q"><b class="num">D3.</b> Given <code>a = np.array([[1, 2, 3], [4, 5, 6]])</code>, write the output of each expression. <span class="mk">[12]</span></div>
+<div class="a"><table>
+<tr><th>Expression</th><th>Output</th><th>Meaning</th></tr>
+<tr><td><code>a.shape</code></td><td><code>(2, 3)</code></td><td>2 rows, 3 columns</td></tr>
+<tr><td><code>a.ndim</code></td><td><code>2</code></td><td>number of dimensions</td></tr>
+<tr><td><code>a.size</code></td><td><code>6</code></td><td>total elements</td></tr>
+<tr><td><code>a.dtype</code></td><td><code>int64</code></td><td>data type of values</td></tr>
+<tr><td><code>a[1, 2]</code></td><td><code>6</code></td><td>row 1, column 2</td></tr>
+<tr><td><code>a[0]</code></td><td><code>[1 2 3]</code></td><td>first row</td></tr>
+<tr><td><code>a[:, 1]</code></td><td><code>[2 5]</code></td><td>column 1 of all rows</td></tr>
+<tr><td><code>a * 2</code></td><td><code>[[ 2 4 6] [ 8 10 12]]</code></td><td>vectorised</td></tr>
+<tr><td><code>a.reshape(3, 2)</code></td><td><code>[[1 2] [3 4] [5 6]]</code></td><td>3×2, size must stay 6</td></tr>
+<tr><td><code>np.sum(a)</code> / <code>np.mean(a)</code></td><td><code>21</code> / <code>3.5</code></td><td>aggregation</td></tr>
+<tr><td><code>np.max(a)</code> / <code>np.min(a)</code></td><td><code>6</code> / <code>1</code></td><td>aggregation</td></tr>
+<tr><td><code>a.sum(axis=0)</code> / <code>a.sum(axis=1)</code></td><td><code>[5 7 9]</code> / <code>[ 6 15]</code></td><td>per column / per row</td></tr></table>
+<code>a.reshape(4, 2)</code> would give a <b>ValueError</b> because 4×2 = 8 ≠ 6 elements.</div>
+
+<div class="q"><b class="num">D4.</b> Given <code>v = np.arange(1, 13)</code>, write the output of <code>v[2:7]</code>, <code>v[-3:]</code>, <code>v[::4]</code> and <code>v.reshape(3, 4)[1:, 2:]</code>. <span class="mk">[4]</span></div>
+<div class="a"><pre class="out">[3 4 5 6 7]
+[10 11 12]
+[1 5 9]
+[[ 7  8]
+ [11 12]]</pre></div>
+
+<div class="q"><b class="num">D5.</b> <span class="hot">(Lab-style)</span> Marks of 8 students are 45, 78, 62, 90, 38, 55, 81, 70. Using NumPy only, write code to: (a) create the array; (b) print mean, median, max, min and standard deviation; (c) count students who passed (≥ 50) and display their marks; (d) label each student Pass/Fail; (e) add 5 bonus marks without exceeding 100. Show the output. <span class="mk">[12]</span></div>
+<div class="a"><pre>import numpy as np
+
+marks = np.array([45, 78, 62, 90, 38, 55, 81, 70])       # (a)
+
+print("Mean:", np.mean(marks))                            # (b)
+print("Median:", np.median(marks))
+print("Max:", np.max(marks), "Min:", np.min(marks))
+print("Std:", round(np.std(marks), 2))
+
+passed = marks >= 50                                      # (c) boolean condition
+print("Passed count:", np.sum(passed))
+print("Passed marks:", marks[passed])
+
+print(np.where(marks >= 50, "Pass", "Fail"))              # (d)
+
+print(np.minimum(marks + 5, 100))                         # (e)</pre>
+<pre class="out">Mean: 64.875
+Median: 66.0
+Max: 90 Min: 38
+Std: 17.0
+Passed count: 6
+Passed marks: [78 62 90 55 81 70]
+['Fail' 'Pass' 'Pass' 'Pass' 'Fail' 'Pass' 'Pass' 'Pass']
+[50 83 67 95 43 60 86 75]</pre>
+Note: <code>np.std</code> is the population SD (ddof=0); pandas <code>.std()</code> uses ddof=1 so it gives a slightly larger value. <code>marks &gt;= 50</code> returns a True/False array; summing it counts the Trues.</div>
+
+<div class="q"><b class="num">D6.</b> Differentiate <code>np.random.rand()</code> and <code>np.random.randint()</code> and give two use cases. Also explain what reshaping is used for. <span class="mk">[5]</span></div>
+<div class="a">
+<code>np.random.rand(3)</code> → random <b>floats between 0 and 1</b> (e.g. 0.42). <code>np.random.randint(1, 10, size=5)</code> → random <b>integers in a range</b> (low included, high excluded). Use cases: simulation, testing (e.g. generate dummy marks).<br>
+Reshaping changes the array structure without changing data: 1D → 2D for analysis (e.g. turn a time series into a matrix), or flatten 2D → 1D to feed image data into a machine-learning model.</div>
+
+<div class="q"><b class="num">D7.</b> Define data transformation and explain why it is important. Give four examples of transformation. <span class="mk">[6]</span></div>
+<div class="a">
+Data transformation = changing data into a suitable format for analysis.<br>
+Why: raw data is rarely ready for analysis; improves data usability; improves (future) model performance; makes visualisation easier.<br>
+Examples: create new columns, convert formats, normalise values, group data (also rename, encode, bin).</div>
+
+<div class="q"><b class="num">D8.</b> Explain the stages of the data pipeline and name one pandas function used at each stage. <span class="mk">[7]</span></div>
+<div class="a"><table>
+<tr><th>Stage</th><th>Meaning</th><th>pandas example</th></tr>
+<tr><td>Load</td><td>Bring data from outside into the program</td><td><code>pd.read_csv()</code></td></tr>
+<tr><td>Inspect</td><td>Quick scan, like opening a file</td><td><code>head(), tail(), shape, info()</code></td></tr>
+<tr><td>Profile</td><td>Understand behaviour: mean, distribution, unique values, outliers</td><td><code>describe(), value_counts(), nunique()</code></td></tr>
+<tr><td>Clean</td><td>Remove/handle missing values, fix formats, check outliers, remove duplicates</td><td><code>fillna(), drop_duplicates(), astype()</code></td></tr>
+<tr><td>Validate</td><td>Quality control – ensure data makes sense</td><td><code>isnull().sum()</code>, check scores between 0–100</td></tr>
+<tr><td>Transform</td><td>Reshape into analysis-ready form</td><td>new column, <code>rename(), pd.cut(), get_dummies()</code></td></tr>
+<tr><td>Analyse</td><td>Extract knowledge: statistics, trends, models</td><td><code>groupby().mean()</code>, charts</td></tr></table></div>
+
+<div class="q"><b class="num">D9.</b> Define feature engineering and give three examples from different domains. <span class="mk">[4]</span></div>
+<div class="a">Feature engineering = creating new useful variables from existing data.<br>
+Height + Weight → BMI (health); Price × Quantity → Total Sales (sales analytics); years worked → experience level (HR); marks → grade category (education).</div>
+
+<div class="q"><b class="num">D10.</b> <span class="hot">(Coding – very likely)</span> The DataFrame <code>df</code> is given:
+<pre>import pandas as pd
+df = pd.DataFrame({"Name": ["Alice","Bob","Charlie","David","Ema"],
+                   "Age": [22, 35, 28, 45, 19],
+                   "Price": [10.0, 7.5, 5.0, 12.0, 8.0],
+                   "Quantity": [2, 3, 4, 1, 5]})</pre>
+Write ONE pandas statement for each task. <span class="mk">[20]</span></div>
+<div class="a"><table>
+<tr><th>Task</th><th>Code</th></tr>
+<tr><td>(a) Create column Total = Price × Quantity</td><td><code>df["Total"] = df["Price"] * df["Quantity"]</code></td></tr>
+<tr><td>(b) Rename Quantity to Qty</td><td><code>df = df.rename(columns={"Quantity": "Qty"})</code></td></tr>
+<tr><td>(c) Select only Name and Total</td><td><code>df[["Name", "Total"]]</code></td></tr>
+<tr><td>(d) Drop column Age</td><td><code>df.drop(columns=["Age"])</code></td></tr>
+<tr><td>(e) Filter rows with Total &gt; 20</td><td><code>df[df["Total"] > 20]</code></td></tr>
+<tr><td>(f) Filter Age &lt; 30 AND Total ≥ 20</td><td><code>df[(df["Age"] < 30) &amp; (df["Total"] >= 20)]</code></td></tr>
+<tr><td>(g) Sort by Total, highest first</td><td><code>df.sort_values("Total", ascending=False)</code></td></tr>
+<tr><td>(h) Convert names to uppercase using apply</td><td><code>df["Name"] = df["Name"].apply(lambda x: x.upper())</code></td></tr>
+<tr><td>(i) Category: Total ≥ 20 → "High" else "Low"</td><td><code>df["Level"] = df["Total"].apply(lambda x: "High" if x >= 20 else "Low")</code></td></tr>
+<tr><td>(j) Bin Age into Young (≤25), Adult (26–40), Senior (&gt;40)</td><td><code>df["Age_Group"] = pd.cut(df["Age"], bins=[0,25,40,100], labels=["Young","Adult","Senior"])</code></td></tr>
+<tr><td>(k) Min-max normalise Price to 0–1</td><td><code>df["Price_norm"] = (df["Price"] - df["Price"].min()) / (df["Price"].max() - df["Price"].min())</code></td></tr>
+<tr><td>(l) Average Total per Age_Group</td><td><code>df.groupby("Age_Group")["Total"].mean()</code></td></tr>
+<tr><td>(m) Count, sum and mean of Total per group</td><td><code>df.groupby("Age_Group")["Total"].agg(["count","sum","mean"])</code></td></tr>
+<tr><td>(n) One-hot encode Age_Group</td><td><code>pd.get_dummies(df["Age_Group"])</code></td></tr>
+<tr><td>(o) Label-encode a Gender column (Male→0, Female→1)</td><td><code>df["Gender_code"] = df["Gender"].map({"Male": 0, "Female": 1})</code></td></tr>
+<tr><td>(p) Combine First + Last into FullName</td><td><code>df["FullName"] = df["First"] + " " + df["Last"]</code></td></tr>
+<tr><td>(q) Convert text date to date format</td><td><code>df["date"] = pd.to_datetime(df["date"])</code></td></tr>
+<tr><td>(r) Convert number stored as text to numeric</td><td><code>df["Price"] = pd.to_numeric(df["Price"])</code> or <code>.astype(float)</code></td></tr>
+<tr><td>(s) Extract day name from date</td><td><code>df["Day"] = df["date"].dt.day_name()</code></td></tr>
+<tr><td>(t) Top 3 by Total</td><td><code>df.nlargest(3, "Total")</code></td></tr></table>
+Expected results after (a), (e), (j), (k), (m):
+<pre class="out">      Name  Age  Price  Quantity  Total
+0    Alice   22   10.0         2   20.0
+1      Bob   35    7.5         3   22.5
+2  Charlie   28    5.0         4   20.0
+3    David   45   12.0         1   12.0
+4      Ema   19    8.0         5   40.0
+
+(e) Total > 20  → Bob (22.5), Ema (40.0)
+(j) Age_Group   → Alice Young, Bob Adult, Charlie Adult, David Senior, Ema Young
+(k) Price_norm  → 0.714, 0.357, 0.000, 1.000, 0.429
+
+(m)        count   sum   mean
+Young          2  60.0  30.00
+Adult          2  42.5  21.25
+Senior         1  12.0  12.00</pre>
+Common traps: double brackets <code>[[ ]]</code> to select many columns; use <code>&amp;</code>/<code>|</code> with brackets around each condition (not <code>and</code>/<code>or</code>); <code>rename</code>/<code>drop</code> return a new DataFrame unless you assign it back.</div>
+
+<div class="q"><b class="num">D11.</b> Differentiate the following pairs of terms with an example: (a) grouping vs aggregation (b) categorising vs binning (c) encoding vs normalising. <span class="mk">[6]</span></div>
+<div class="a">
+(a) <b>Grouping</b> puts similar rows together by a category (group sales by month); <b>aggregation</b> combines values into a summary result (total/average/count of each group). Usually used together: <code>groupby("month")["sales"].sum()</code>.<br>
+(b) <b>Categorising</b> assigns labels using a rule (score ≥ 50 → Pass, else Fail); <b>binning</b> groups continuous values into ranges (age 18–25 Young, 26–40 Adult) using <code>pd.cut()</code>.<br>
+(c) <b>Encoding</b> converts text categories to numbers so computers/ML models can use them (Male→0, Female→1, or <code>get_dummies</code>); <b>normalising</b> rescales numeric values to a similar range, e.g. 0–1, so they can be compared fairly.</div>
+
+<div class="q"><b class="num">D12.</b> State three common mistakes in data transformation and how to avoid them. <span class="mk">[3]</span></div>
+<div class="a">
+(1) <b>Overwriting original data</b> → work on a copy <code>df_clean = df.copy()</code>. (2) <b>Wrong data type</b> (numbers stored as text, cannot calculate) → check <code>df.dtypes</code>, convert with <code>astype</code>/<code>pd.to_numeric</code>. (3) <b>Incorrect grouping</b> (wrong column or inconsistent labels "cs" vs "CS") → standardise text first, e.g. <code>str.upper()</code>, then group.</div>
+
+<!-- ===================================================== -->
+<h2 class="pb">SECTION E — Lab-Based Case Study (Pandas &amp; Data Preparation)</h2>
+<p>This section mirrors Lab Assessment 1. Expect one long structured question built on one of the five lab datasets (student, online shopping, café sales, gym, mobile usage). Practise the code until you can write it without notes.</p>
+
+<div class="q"><b class="num">E1.</b> You are a junior data analyst given <code>student.csv</code> (columns: student_id, program, gender, math_score, programming_score, data_mining_score). Write pandas code to complete the tasks. <span class="mk">[20]</span>
+<ol type="a"><li>Import pandas and load the file into <code>df</code>.</li>
+<li>Display the first 5 and last 5 rows, the shape, column names and data types.</li>
+<li>Show the number of missing values per column and replace numeric missing values with the column mean.</li>
+<li>Check for duplicate rows and remove them.</li>
+<li>Ensure the score columns are numeric.</li>
+<li>Produce descriptive statistics.</li>
+<li>Create <code>average_score</code> and find the mean average_score per program and per gender.</li>
+<li>Display the top 5 and bottom 5 students by average_score.</li></ol></div>
+<div class="a"><pre># (a) Setup & loading
+import pandas as pd
+import numpy as np
+df = pd.read_csv("student.csv")
+
+# (b) Inspect
+print(df.head())          # first 5 rows
+print(df.tail())          # last 5 rows
+print(df.shape)           # (rows, columns)
+print(df.columns)         # column names
+print(df.dtypes)          # data types   (or df.info())
+
+# (c) Missing values
+print(df.isnull().sum())
+num_cols = ["math_score", "programming_score", "data_mining_score"]
+for col in num_cols:
+    df[col] = df[col].fillna(df[col].mean())
+
+# (d) Duplicates
+print("Duplicates:", df.duplicated().sum())
+df = df.drop_duplicates()
+
+# (e) Correct data types
+df[num_cols] = df[num_cols].apply(pd.to_numeric, errors="coerce")
+print(df.dtypes)
+
+# (f) Descriptive statistics
+print(df.describe())
+
+# (g) New column + group-based analysis
+df["average_score"] = df[num_cols].mean(axis=1)
+print(df.groupby("program")["average_score"].mean())
+print(df.groupby("gender")["average_score"].mean())
+
+# (h) Ranking & filtering
+print(df.sort_values("average_score", ascending=False).head(5))   # top 5
+print(df.sort_values("average_score").head(5))                    # bottom 5
+# alternative: df.nlargest(5, "average_score"), df.nsmallest(5, "average_score")</pre>
+<div class="tip" style="margin:4px 0"><b>Order tip:</b> remove duplicates <i>before</i> filling missing values if you want the mean to be unbiased – duplicate rows count twice in the mean. Either order is accepted if you justify it.</div></div>
+
+<div class="q"><b class="num">E2.</b> Trace the code below and write the output of each print statement. <span class="mk">[10]</span>
+<pre>import pandas as pd
+import numpy as np
+t = pd.DataFrame({"student_id": [1, 2, 3, 3, 4, 5],
+                  "program": ["CS", "IT", "CS", "CS", "IT", "CS"],
+                  "math_score": [80, np.nan, 70, 70, 90, 60],
+                  "programming_score": [75, 85, np.nan, np.nan, 95, 65]})
+print(t.isnull().sum())                                  # (i)
+print(t.duplicated().sum())                              # (ii)
+t = t.drop_duplicates()
+print(t.shape)                                           # (iii)
+print(t["math_score"].mean())                            # (iv)
+t["math_score"] = t["math_score"].fillna(t["math_score"].mean())
+t["programming_score"] = t["programming_score"].fillna(t["programming_score"].mean())
+print(t.groupby("program")["math_score"].mean())         # (v)</pre></div>
+<div class="a"><pre class="out">(i)   student_id           0
+      program              0
+      math_score           1
+      programming_score    2
+      dtype: int64
+(ii)  1
+(iii) (5, 4)
+(iv)  75.0          # (80 + 70 + 90 + 60) / 4, NaN is skipped
+(v)   program
+      CS    70.0     # (80 + 70 + 60) / 3
+      IT    82.5     # (75 + 90) / 2, the filled 75 counts
+      Name: math_score, dtype: float64</pre>
+Row 3 and its copy are identical (NaN values are treated as equal by <code>duplicated()</code>), so 1 duplicate is removed.</div>
+
+<div class="q"><b class="num">E3.</b> The output of <code>df.describe()</code> for the gym dataset is shown. Interpret <b>two</b> numeric columns. <span class="mk">[6]</span>
+<table style="width:70%;background:#fff"><tr><th></th><th>age</th><th>visits_per_month</th><th>monthly_fee</th></tr>
+<tr><td>count</td><td>200</td><td>200</td><td>200</td></tr>
+<tr><td>mean</td><td>23.4</td><td>9.8</td><td>85.0</td></tr>
+<tr><td>std</td><td>3.1</td><td>6.2</td><td>20.5</td></tr>
+<tr><td>min</td><td>18</td><td>0</td><td>50</td></tr>
+<tr><td>25%</td><td>21</td><td>4</td><td>70</td></tr>
+<tr><td>50%</td><td>23</td><td>8</td><td>80</td></tr>
+<tr><td>75%</td><td>25</td><td>15</td><td>100</td></tr>
+<tr><td>max</td><td>35</td><td>28</td><td>150</td></tr></table></div>
+<div class="a">
+<b>age</b>: 200 members, average age 23.4 years with a small spread (std 3.1). Half are 23 or younger and 75% are 25 or younger, so members are mostly young adults/university students. The max of 35 is a few older members.<br>
+<b>visits_per_month</b>: average 9.8 visits but std 6.2 is large relative to the mean → attendance varies a lot. The median (8) is lower than the mean, so a few very active members (max 28) pull the mean up (right-skewed). Min 0 means some members pay but never come – a retention risk the gym could target with reminders.<br>
+Method: count → mean → spread (std / min / max) → median vs mean → real-world meaning.</div>
+
+<div class="q"><b class="num">E4.</b> Compare NumPy and pandas, and justify when you would use each in your lab work. <span class="mk">[7]</span></div>
+<div class="a"><table><tr><th>Aspect</th><th>NumPy</th><th>pandas</th></tr>
+<tr><td>Structure</td><td><code>ndarray</code> – one data type, no labels</td><td><code>DataFrame</code>/<code>Series</code> – labelled rows &amp; columns, mixed types</td></tr>
+<tr><td>Strength</td><td>Fast numerical computation, vectorised maths, boolean masks</td><td>Loading CSV, cleaning (missing values, duplicates), groupby, reporting</td></tr>
+<tr><td>Missing values</td><td>Basic (NaN breaks <code>np.mean</code> unless <code>np.nanmean</code>)</td><td>Built-in <code>isnull, fillna, dropna</code></td></tr>
+<tr><td>Text columns</td><td>Not suitable</td><td>Handles program, gender, etc.</td></tr></table>
+Justification: I used pandas to load <code>student.csv</code>, fix missing values and group scores by program, because those tasks need column names and text categories. I converted <code>math_score</code> to a NumPy array to calculate mean/std and count students ≥ 50 with a boolean mask, because NumPy is faster and simpler for pure numeric work. pandas is built on NumPy, so they work together.</div>
+
+<div class="q"><b class="num">E5.</b> Reflection questions (structured, 4 parts). <span class="mk">[16]</span><br>
+(a) Describe data quality issues found and their impact on statistical results. (b) Explain one interesting pattern and how it supports decision making. (c) Discuss two limitations of the dataset/analysis. (d) Propose two further analyses.</div>
+<div class="a">
+<b>(a) Data quality</b> – Issues: missing values in math_score and programming_score; duplicate student records; score columns stored as text. Impact: duplicates count a student twice and bias the mean towards that student; missing values make <code>mean()</code> use fewer records or break calculations; text-type scores cannot be averaged. Cleaning improved reliability: after removing duplicates and filling missing values with the mean, every student is counted once and all rows can be used, so the averages reflect the real class.<br>
+<b>(b) Pattern</b> – e.g. IT students' average math score (82.5) is higher than CS students' (70.0). Real-world meaning: CS students may need more maths support. Decision: the faculty could offer extra maths tutorials or early-warning monitoring for CS students.<br>
+<b>(c) Limitations</b> – (1) Small sample from one university → cannot generalise to all students (sample vs population). (2) Mean imputation hides true variation and lowers the standard deviation. (3) Missing factors such as attendance, study hours or family background, so we can see <i>what</i> differs but not <i>why</i> – conclusions are descriptive, not causal.<br>
+<b>(d) Further analysis</b> – (1) Collect attendance and study-hours data to do <b>diagnostic</b> analysis (correlation between attendance and score). (2) Use several semesters of data to <b>predict</b> at-risk students (e.g. regression/classification with Scikit-learn), allowing early intervention. (3) Visualise score distributions per program with histograms/box plots to communicate findings.</div>
+
+<div class="q"><b class="num">E6.</b> Write a mini analysis for the café dataset (columns: date, item, category, quantity, unit_price, total_sales, payment_type): verify total_sales, find total sales per category, the most popular payment type, the best-selling day of the week, and plot sales per category. <span class="mk">[10]</span></div>
+<div class="a"><pre>import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("cafe_sales.csv")
+df["date"] = pd.to_datetime(df["date"])                      # convert format
+
+# validate: recompute total and compare
+df["check_total"] = df["quantity"] * df["unit_price"]
+print("Wrong totals:", (df["check_total"] != df["total_sales"]).sum())
+
+cat_sales = df.groupby("category")["total_sales"].sum().sort_values(ascending=False)
+print(cat_sales)
+
+print(df["payment_type"].value_counts())                     # most popular first
+
+df["day"] = df["date"].dt.day_name()                         # feature engineering
+print(df.groupby("day")["total_sales"].sum().idxmax())       # best day
+
+cat_sales.plot(kind="bar", title="Total Sales by Category")
+plt.ylabel("Sales (RM)")
+plt.show()</pre></div>
+
+<!-- ===================================================== -->
+<h2 class="pb">Appendix — One-Page Cheat Sheet</h2>
+<table>
+<tr><th style="width:32%">Need</th><th>Code</th></tr>
+<tr><td>Load / inspect</td><td><code>pd.read_csv("f.csv")</code>, <code>df.head()</code>, <code>df.tail()</code>, <code>df.shape</code>, <code>df.columns</code>, <code>df.dtypes</code>, <code>df.info()</code></td></tr>
+<tr><td>Missing values</td><td><code>df.isnull().sum()</code>, <code>df[c].fillna(df[c].mean())</code>, <code>df.dropna()</code></td></tr>
+<tr><td>Duplicates</td><td><code>df.duplicated().sum()</code>, <code>df.drop_duplicates()</code></td></tr>
+<tr><td>Types</td><td><code>df[c].astype(int)</code>, <code>pd.to_numeric(df[c])</code>, <code>pd.to_datetime(df[c])</code></td></tr>
+<tr><td>Statistics</td><td><code>df.describe()</code>, <code>.mean() .median() .std() .min() .max() .count()</code>, <code>value_counts()</code></td></tr>
+<tr><td>Select / filter / sort</td><td><code>df[["a","b"]]</code>, <code>df[df[c] &gt; 50]</code>, <code>df.sort_values(c, ascending=False)</code>, <code>nlargest(5, c)</code></td></tr>
+<tr><td>Transform</td><td><code>df["new"] = …</code>, <code>rename(columns={})</code>, <code>drop(columns=[])</code>, <code>apply(lambda x: …)</code>, <code>map({})</code></td></tr>
+<tr><td>Bin / encode / normalise</td><td><code>pd.cut(col, bins, labels)</code>, <code>pd.get_dummies(col)</code>, <code>(x - min) / (max - min)</code></td></tr>
+<tr><td>Group</td><td><code>df.groupby(g)[c].mean()</code>, <code>.agg(["count","sum","mean"])</code></td></tr>
+<tr><td>NumPy create</td><td><code>np.array, zeros, ones, arange(start,stop,step), linspace(start,stop,num)</code></td></tr>
+<tr><td>NumPy attributes</td><td><code>shape, ndim, dtype, size</code>; <code>reshape(r, c)</code></td></tr>
+<tr><td>NumPy maths</td><td><code>a+b, a*2, np.sqrt(a), np.sum/mean/max/min/std/median</code>, <code>a[a&gt;=50]</code>, <code>np.where(cond, x, y)</code></td></tr>
+<tr><td>Random</td><td><code>np.random.rand(n)</code> (0–1 floats), <code>np.random.randint(low, high, size)</code></td></tr>
+<tr><td>Charts</td><td><code>plt.plot / bar / hist / pie / scatter</code>, <code>plt.title, xlabel, ylabel, show</code></td></tr>
+</table>
+<h3>Definitions to memorise word-for-word</h3>
+<ul>
+<li><b>Data preparation</b>: collecting, transforming and storing a dataset in a form useful for analysis (Collection → Wrangling → Management).</li>
+<li><b>Data analysis</b>: examining prepared data to uncover insights and guide decision making.</li>
+<li><b>Data storytelling</b>: communicating insights through summaries, visualisations and narratives.</li>
+<li><b>Metadata</b>: data about data (variable names, units, creation date, number of missing values).</li>
+<li><b>Data transformation</b>: changing data into a suitable format for analysis.</li>
+<li><b>Feature engineering</b>: creating new useful variables from existing data.</li>
+<li><b>Vectorisation</b>: applying an operation to the whole array at once without a manual loop.</li>
+<li><b>Class / object / method / self</b>: blueprint / instance / function inside class / current object.</li>
+</ul>
+<p class="small" style="margin-top:16px">Prediction paper prepared for revision. Question style and weighting are predictions based on the lecture notes and Lab 1 marking scheme, not the actual exam.</p>
+</body></html>
