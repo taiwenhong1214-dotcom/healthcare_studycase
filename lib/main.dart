@@ -73,12 +73,22 @@ const lessons = [
     title: 'Missing MFA',
     navLabel: 'MFA',
     icon: Icons.smartphone_rounded,
-    kicker: '',
-    blurb: '',
-    summary: '',
-    weakness: '',
-    risk: '',
-    solution: '',
+    kicker: 'Stolen passwords',
+    blurb: 'A password alone opened the door.',
+    summary:
+        'With stolen staff credentials, the attackers walked straight into '
+        'the portal. Nothing checked that they were really the staff member.',
+    weakness:
+        'The portal had no MFA, so anyone with a password could get in, '
+        'employee or not.',
+    risk:
+        'Attackers could reach sensitive medical data, such as protected '
+        'health information (PHI) and personally identifiable information '
+        '(PII), and leak it.',
+    solution:
+        'Require MFA at every entry point, using at least two different '
+        'methods such as a fingerprint, security PIN, or face scan. FIDO2 '
+        'also supports passwordless sign-in.',
   ),
   Lesson(
     number: '02',

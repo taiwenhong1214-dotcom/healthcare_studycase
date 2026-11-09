@@ -848,7 +848,7 @@ var $async$X3=A.P(function(b,c){if(b===1)return A.L(c,r)
 for(;;)switch(s){case 0:m={}
 k=t.Lk
 s=3
-return A.Q(A.vD(a.uW("FontManifest.json?v=7dd1200c6f7501eef7bfb17a4e49f2aa")),$async$X3)
+return A.Q(A.vD(a.uW("FontManifest.json?v=967e1f53272ba443eb84797e3ad620e8")),$async$X3)
 case 3:l=k.a(c)
 if(!l.gHh()){$.dn().$1("Font manifest does not exist at `"+l.a+"` - ignoring.")
 q=new A.xO(A.c([],t.z8))
@@ -75246,7 +75246,7 @@ if(a)c.y=A.p(t.N,t.UX)
 s=t.jl
 r=A.c([],s)
 q=c.y.h(0,b)
-if(q==null)q=B.hm
+if(q==null)q=B.hn
 p=A.p(t.ob,t.UX)
 o=c.y.gbV()
 n=o.hB(o)
@@ -75265,8 +75265,8 @@ if(j){r=A.c([],s)
 i=c.y
 i.toString
 q=i.h(0,h.geC())
-if(q==null)q=B.hm}else{r=B.hm
-q=B.hm}l=h
+if(q==null)q=B.hn}else{r=B.hn
+q=B.hn}l=h
 continue}if(j){i=h.b
 i=i==null?b:i.gVM()
 j=i===!0}else j=!1
@@ -83742,7 +83742,7 @@ k=A.ri(A.aaD(!1,new A.Mz(m.e,A.hW(new A.dH(new A.a6(0,e,0,1/0),new A.co(new A.ai
 return new A.A2(g,k,B.ep,h?l:m.a3j(i),l)},
 a3E(){var s,r,q,p=this,o=null,n=A.c([A.hr(new A.fL(B.fq,o,o,p.a3k(),o)),p.afE("Home",0)],t.p)
 for(s=0;s<3;s=r){r=s+1
-q=B.hn[s]
+q=B.hm[s]
 n.push(p.R7(q.c,q.a,r,q.b))}n.push(B.yR)
 q=A.aIN(o,o,o,o,o,o,o,o,o,B.a3,o,o,B.Em,o,new A.cq(A.cQ(10),B.n),B.Aq,o,o,B.Tj,o)
 n.push(A.NB(new A.KK(!0,p.gOX(),o,o,o,q,o,o,!1,o,!0,o,new A.S_(B.Us,B.Fp,q,o,o),o),"Ask the study assistant"))
@@ -83760,7 +83760,7 @@ return A.bV(!0,p,d==null?q:A.NB(q,d),!1,p,p,!1,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p,p
 afE(a,b){return this.R7(a,null,b,null)},
 a3j(a){var s,r,q,p=this,o=null,n=a?8:16,m=A.c([A.hr(p.OJ(B.F5,"Home",0,"Overview"))],t.p)
 for(s=0;s<3;s=r){r=s+1
-q=B.hn[s]
+q=B.hm[s]
 m.push(new A.lD(1,B.dy,p.OJ(q.d,q.c,r,q.b),o))}m.push(A.hr(p.abu(B.nF,"Ask",p.gOX(),"Ask the study assistant")))
 return A.cu(o,A.aaD(!0,A.hW(new A.dH(B.m2,new A.co(new A.ai(n,6,n,6),A.eH(m,B.Q,B.S,0),o),o),1,o),!1),B.p,o,o,B.m4,o,o,o,o,o,o,o)},
 OK(a,b,c,d,e){var s=null,r=d!=null&&this.d===d,q=c==null?new A.ag6(this,d):c,p=A.tZ(s,s,s,s,s,s,s,s,s,r?B.a3:B.bq,s,B.P7,B.r,B.Ef,s,s,s,s,B.eW,s,s),o=r?B.dk:B.r,n=A.cQ(999),m=A.hl(r?B.cJ:B.r,1),l=A.as8(a,r?B.a3:B.bq,s,19),k=A.hV(28,52),j=r?B.am:B.ah
@@ -83799,7 +83799,7 @@ p=a?11.5:12.5
 r=A.c([new A.lD(1,B.dy,A.ev(A.c([new A.xC(B.m6,q,o),B.lk,A.cj(r.b,1,B.aw,o,new A.o(!0,B.bq,o,o,o,o,p,o,o,o,o,o,1.4,o,o,o,o,o,o,o,o,o,o,o,o,o),B.fe,o)],k),B.Q,B.aX),o)],k)
 if(s<2)r.push(A.cu(o,o,B.p,B.bW,o,o,o,a?30:38,o,o,o,o,1))
 B.b.O(j,r)}return A.cu(o,A.eH(j,B.Q,B.S,0),B.p,o,o,new A.bP(B.bX,o,l,m,o,o,B.U),o,o,o,new A.ai(0,n,0,n),o,o,o)},
-a3r(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.d,i=B.hn[j-1],h=j===3
+a3r(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.d,i=B.hm[j-1],h=j===3
 j=A.tZ(k,k,k,k,k,k,k,k,k,B.bK,k,B.P6,B.r,B.aM,k,k,k,k,B.eW,B.SH,k)
 s=t.p
 j=A.at6(B.zz,A.c([new A.B7(!0,new A.ag3(l),k,k,k,j,B.p,k,!1,k,!0,k,new A.UK(B.Uo,B.Fm,j,k,k),k),A.cj("Lesson "+l.d+" of 3",k,k,k,B.dW,k,k)],s),B.lF,4,12)
@@ -83821,7 +83821,7 @@ n=A.cQ(14)
 m=A.hl(B.cJ,1)
 B.b.O(j,A.c([r,B.jv,p,B.jv,A.cu(k,A.ev(A.c([B.Ng,B.ic,A.cj(i.y,k,k,k,A.cV(k,k,B.az,k,k,k,k,k,k,k,k,a?15.5:16,k,k,k,k,1.7,!0,k,k,k,k,k,k,k,k),k,k)],s),B.ag,B.S),B.p,k,k,new A.bP(B.dk,k,m,n,k,k,B.U),k,k,B.Ea,new A.ai(o,o,o,o),k,k,k)],s))}j.push(A.eT(k,a?36:44,k))
 if(h&&q)j.push(A.cu(k,B.D6,B.p,k,k,B.m5,k,k,k,B.n7,k,k,k))
-if(!h)j.push(l.a3y(B.hn[l.d],a))
+if(!h)j.push(l.a3y(B.hm[l.d],a))
 j.push(B.Pu)
 j.push(B.zI)
 return A.ev(j,B.cK,B.S)},
@@ -89708,6 +89708,13 @@ B.Iy=s([0.01932141,0.11916382,0.95034478],t.n)
 B.cR=s([B.Hz,B.Hg,B.Iy],t.zg)
 B.nS=s([0,4,12,1,5,13,3,7,15],t.t)
 B.H_=s([65533],t.t)
+B.Ff=new A.dv(983451,"MaterialIcons",!1)
+B.Gf=new A.rK("01","Missing MFA","MFA",B.Ff,"Stolen passwords","With stolen staff credentials, the attackers walked straight into the portal. Nothing checked that they were really the staff member.","The portal had no MFA, so anyone with a password could get in, employee or not.","Attackers could reach sensitive medical data, such as protected health information (PHI) and personally identifiable information (PII), and leak it.","Require MFA at every entry point, using at least two different methods such as a fingerprint, security PIN, or face scan. FIDO2 also supports passwordless sign-in.")
+B.Fc=new A.dv(63169,"MaterialIcons",!1)
+B.Gh=new A.rK("02","Outdated Systems","Updates",B.Fc,"Known exploits","Once inside, the attackers found systems that had missed updates. Known flaws in that old software gave them a firmer foothold.","Old, unsupported software may stop receiving security updates.","Attackers could exploit published vulnerabilities that already had fixes available.","Test and install updates on a regular schedule, and replace systems that can no longer receive patches.")
+B.Fh=new A.dv(983861,"MaterialIcons",!1)
+B.Gg=new A.rK("03","Poor Network Separation","Network",B.Fh,"","","","","")
+B.hm=s([B.Gf,B.Gh,B.Gg],A.am("A<rK>"))
 B.Wr=new A.fF(0,1)
 B.Ww=new A.fF(0.5,1)
 B.Wz=new A.fF(0.5375,0.75)
@@ -89815,7 +89822,7 @@ B.I5=s([],t.fJ)
 B.I1=s([],t.ER)
 B.XL=s([],t.ss)
 B.nY=s([],t.tc)
-B.hm=s([],t.jl)
+B.hn=s([],t.jl)
 B.o_=s([],t.wi)
 B.I8=s([],A.am("A<jf<@>>"))
 B.kk=s([],t.AO)
@@ -89853,13 +89860,6 @@ B.kG=new A.h_(7,"functionModifier")
 B.u5=new A.h_(8,"symbolModifier")
 B.o1=s([B.dC,B.dD,B.dE,B.dF,B.kD,B.kE,B.kF,B.kG,B.u5],A.am("A<h_>"))
 B.km=s([!0,!1],t.HZ)
-B.Ff=new A.dv(983451,"MaterialIcons",!1)
-B.Gg=new A.rK("01","Missing MFA","MFA",B.Ff,"","","","","")
-B.Fc=new A.dv(63169,"MaterialIcons",!1)
-B.Gh=new A.rK("02","Outdated Systems","Updates",B.Fc,"Known exploits","Once inside, the attackers found systems that had missed updates. Known flaws in that old software gave them a firmer foothold.","Old, unsupported software may stop receiving security updates.","Attackers could exploit published vulnerabilities that already had fixes available.","Test and install updates on a regular schedule, and replace systems that can no longer receive patches.")
-B.Fh=new A.dv(983861,"MaterialIcons",!1)
-B.Gf=new A.rK("03","Poor Network Separation","Network",B.Fh,"","","","","")
-B.hn=s([B.Gg,B.Gh,B.Gf],A.am("A<rK>"))
 B.Iz=s(["pointerdown","pointermove","pointerleave","pointerup","pointercancel","touchstart","touchend","touchmove","touchcancel","mousedown","mousemove","mouseleave","mouseup","wheel"],t.s)
 B.EU=new A.ft(100)
 B.EV=new A.ft(200)
