@@ -291,6 +291,20 @@
         border-top: 1px solid var(--line);
       }
 
+      .question-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+      }
+
+      .question-count {
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
       .question h2 {
         max-width: 680px;
         margin: 10px 0 18px;
@@ -367,16 +381,43 @@
         background: var(--warning);
       }
 
+      .feedback-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
       .feedback {
         display: flex;
+        flex: 1;
+        min-width: 0;
         align-items: flex-start;
         gap: 10px;
-        margin-top: 16px;
         padding: 16px;
         border: 1px solid var(--accent-line);
         border-radius: 12px;
         background: var(--accent-surface);
         color: var(--accent);
+      }
+
+      .next-question {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: none;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        cursor: pointer;
+        transition: background 160ms ease;
+      }
+
+      .next-question:hover {
+        background: #9ae7ce;
       }
 
       .feedback.incorrect {
@@ -1151,11 +1192,14 @@
         </div>
 
         <section class="question" aria-labelledby="question-heading">
-          <div class="eyebrow accent">Quick question</div>
+          <div class="question-top">
+            <div class="eyebrow accent">Quick question</div>
+            <span class="question-count" id="question-count">Question 1 of 2</span>
+          </div>
           <h2 id="question-heading">
             A hospital’s old server still works. Should it skip security updates?
           </h2>
-          <div class="choices" role="group" aria-label="Answer choices">
+          <div class="choices" id="question-choices" role="group" aria-label="Answer choices">
             <button
               class="choice"
               type="button"
@@ -1175,9 +1219,22 @@
               <span>Yes — if it still works</span>
             </button>
           </div>
-          <div class="feedback" id="feedback" role="status" aria-live="polite" hidden>
-            <span class="feedback-icon" id="feedback-icon" aria-hidden="true">✓</span>
-            <span class="feedback-text" id="feedback-text"></span>
+          <div class="feedback-row" id="feedback-row" hidden>
+            <div class="feedback" id="feedback" role="status" aria-live="polite">
+              <span class="feedback-icon" id="feedback-icon" aria-hidden="true">✓</span>
+              <span class="feedback-text" id="feedback-text"></span>
+            </div>
+            <button
+              class="next-question"
+              id="next-question"
+              type="button"
+              aria-label="Next question"
+              title="Next question"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
           </div>
         </section>
 
@@ -1529,26 +1586,111 @@
       );
 
       // Quick question ----------------------------------------------------
+      const QUICK_QUESTIONS = [
+        {
+          prompt:
+            "A hospital’s old server still works. Should it skip security updates?",
+          choices: ["No — always patch", "Yes — if it still works"],
+          correctIndex: 0,
+          correctFeedback:
+            "That’s right. Working is not the same as secure. Patch it, test with sample claims, and keep a rollback plan.",
+          incorrectFeedback:
+            "Not quite. Legacy systems are a favourite target. Updates still matter even when the hardware keeps running.",
+        },
+        {
+          prompt:
+            "A hospital’s portal requires username and password before login. That should be enough right?",
+          choices: [
+            "A. Yes, another day, another dollar!",
+            "B. No, at least require an additional PIN or biometric scan!",
+          ],
+          correctIndex: 1,
+          correctFeedback:
+            "That’s right. Stolen passwords alone let attackers straight into the portal. Require MFA at every entry point using another factor like a PIN or biometric scan.",
+          incorrectFeedback:
+            "Not quite. Passwords can be stolen or leaked. Without a second factor like a PIN or biometric scan, anyone with those credentials can log in.",
+        },
+      ];
+
+      function shuffleQuestions(items) {
+        const copy = items.slice();
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      const questions = shuffleQuestions(QUICK_QUESTIONS);
+      let currentQuestionIndex = 0;
+      let selectedChoiceIndex = -1;
+
+      const questionHeading = document.getElementById("question-heading");
+      const questionCount = document.getElementById("question-count");
+      const choicesContainer = document.getElementById("question-choices");
+      const feedbackRow = document.getElementById("feedback-row");
       const feedback = document.getElementById("feedback");
       const feedbackIcon = document.getElementById("feedback-icon");
       const feedbackText = document.getElementById("feedback-text");
+      const nextQuestionButton = document.getElementById("next-question");
 
-      document.querySelectorAll(".choice").forEach((choice) => {
-        choice.addEventListener("click", () => {
-          document.querySelectorAll(".choice").forEach((other) => {
-            other.setAttribute("aria-pressed", "false");
+      function renderQuestion() {
+        const question = questions[currentQuestionIndex];
+        questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        questionHeading.textContent = question.prompt;
+        choicesContainer.replaceChildren();
+
+        question.choices.forEach((label, index) => {
+          const choice = document.createElement("button");
+          choice.className = "choice";
+          choice.type = "button";
+          choice.dataset.answer =
+            index === question.correctIndex ? "correct" : "incorrect";
+          choice.setAttribute(
+            "aria-pressed",
+            selectedChoiceIndex === index ? "true" : "false",
+          );
+
+          const radio = document.createElement("span");
+          radio.className = "radio";
+          radio.setAttribute("aria-hidden", "true");
+
+          const text = document.createElement("span");
+          text.textContent = label;
+
+          choice.append(radio, text);
+          choice.addEventListener("click", () => {
+            selectedChoiceIndex = index;
+            choicesContainer.querySelectorAll(".choice").forEach((other, i) => {
+              other.setAttribute("aria-pressed", i === index ? "true" : "false");
+            });
+
+            const correct = index === question.correctIndex;
+            feedbackRow.hidden = false;
+            feedback.classList.toggle("incorrect", !correct);
+            feedbackIcon.textContent = correct ? "✓" : "!";
+            feedbackText.textContent = correct
+              ? question.correctFeedback
+              : question.incorrectFeedback;
           });
-          choice.setAttribute("aria-pressed", "true");
 
-          const correct = choice.dataset.answer === "correct";
-          feedback.hidden = false;
-          feedback.classList.toggle("incorrect", !correct);
-          feedbackIcon.textContent = correct ? "✓" : "!";
-          feedbackText.textContent = correct
-            ? "That’s right. Working is not the same as secure. Patch it, test with sample claims, and keep a rollback plan."
-            : "Not quite. Legacy systems are a favourite target. Updates still matter even when the hardware keeps running.";
+          choicesContainer.appendChild(choice);
         });
+
+        if (selectedChoiceIndex === -1) {
+          feedbackRow.hidden = true;
+          feedback.classList.remove("incorrect");
+          feedbackText.textContent = "";
+        }
+      }
+
+      nextQuestionButton.addEventListener("click", () => {
+        currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+        selectedChoiceIndex = -1;
+        renderQuestion();
       });
+
+      renderQuestion();
 
       // Assistant ---------------------------------------------------------
       const askButton = document.getElementById("ask-button");

@@ -122,14 +122,66 @@ const lessons = [
   ),
 ];
 
+class _QuickQuestion {
+  const _QuickQuestion({
+    required this.prompt,
+    required this.choices,
+    required this.correctIndex,
+    required this.correctFeedback,
+    required this.incorrectFeedback,
+  });
+
+  final String prompt;
+  final List<String> choices;
+  final int correctIndex;
+  final String correctFeedback;
+  final String incorrectFeedback;
+}
+
+const _quickQuestions = [
+  _QuickQuestion(
+    prompt:
+        'A hospital’s old server still works. Should it skip security updates?',
+    choices: ['No — always patch', 'Yes — if it still works'],
+    correctIndex: 0,
+    correctFeedback:
+        'That’s right. Working is not the same as secure. Patch it, test with '
+        'sample claims, and keep a rollback plan.',
+    incorrectFeedback:
+        'Not quite. Legacy systems are a favourite target. Updates still '
+        'matter even when the hardware keeps running.',
+  ),
+  _QuickQuestion(
+    prompt:
+        'A hospital’s portal requires username and password before login. '
+        'That should be enough right?',
+    choices: [
+      'A. Yes, another day, another dollar!',
+      'B. No, at least require an additional PIN or biometric scan!',
+    ],
+    correctIndex: 1,
+    correctFeedback:
+        'That’s right. Stolen passwords alone let attackers straight into '
+        'the portal. Require MFA at every entry point using another factor '
+        'like a PIN or biometric scan.',
+    incorrectFeedback:
+        'Not quite. Passwords can be stolen or leaked. Without a second '
+        'factor like a PIN or biometric scan, anyone with those credentials '
+        'can log in.',
+  ),
+];
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, this.chatSession});
+  const MyApp({super.key, this.chatSession, this.questionRandom});
 
   /// Kept alive across assistant open/close cycles for tests and previews.
   /// A normal app start creates a fresh session.
   final ChatSession? chatSession;
+
+  /// Optional random generator to keep question order deterministic in tests.
+  final math.Random? questionRandom;
 
   @override
   Widget build(BuildContext context) {
@@ -157,15 +209,19 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: AppShell(chatSession: chatSession),
+      home: AppShell(
+        chatSession: chatSession,
+        questionRandom: questionRandom,
+      ),
     );
   }
 }
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key, this.chatSession});
+  const AppShell({super.key, this.chatSession, this.questionRandom});
 
   final ChatSession? chatSession;
+  final math.Random? questionRandom;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -177,12 +233,17 @@ class _AppShellState extends State<AppShell> {
   final ScrollController _scrollController = ScrollController();
   late final ChatSession _chatSession;
   late final bool _ownsChatSession;
+  late final List<_QuickQuestion> _questions;
+  int _questionIndex = 0;
+  int _selectedChoice = -1;
 
   @override
   void initState() {
     super.initState();
     _ownsChatSession = widget.chatSession == null;
     _chatSession = widget.chatSession ?? ChatSession();
+    _questions = List<_QuickQuestion>.of(_quickQuestions)
+      ..shuffle(widget.questionRandom ?? math.Random());
 
     // Allow shareable links such as /?lesson=2. This also makes it easy to
     // preview a specific lesson while working on the design.
@@ -603,6 +664,17 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  void _selectChoice(int choice) {
+    setState(() => _selectedChoice = choice);
+  }
+
+  void _nextQuestion() {
+    setState(() {
+      _questionIndex = (_questionIndex + 1) % _questions.length;
+      _selectedChoice = -1;
+    });
+  }
+
   // -------------------------------------------------------------------------
   // Overview
   // -------------------------------------------------------------------------
@@ -615,7 +687,14 @@ class _AppShellState extends State<AppShell> {
         SizedBox(height: isMobile ? 20 : 24),
         _buildStats(isMobile),
         SizedBox(height: isMobile ? 40 : 48),
-        const _QuestionSection(),
+        _QuestionSection(
+          question: _questions[_questionIndex],
+          questionNumber: _questionIndex + 1,
+          totalQuestions: _questions.length,
+          selected: _selectedChoice,
+          onSelect: _selectChoice,
+          onNext: _nextQuestion,
+        ),
         SizedBox(height: isMobile ? 40 : 48),
         const _FooterSection(),
       ],
@@ -1179,21 +1258,28 @@ class _AppShellState extends State<AppShell> {
 // Quick question
 // ---------------------------------------------------------------------------
 
-class _QuestionSection extends StatefulWidget {
-  const _QuestionSection();
+class _QuestionSection extends StatelessWidget {
+  const _QuestionSection({
+    required this.question,
+    required this.questionNumber,
+    required this.totalQuestions,
+    required this.selected,
+    required this.onSelect,
+    required this.onNext,
+  });
 
-  @override
-  State<_QuestionSection> createState() => _QuestionSectionState();
-}
-
-class _QuestionSectionState extends State<_QuestionSection> {
-  int _selected = -1;
+  final _QuickQuestion question;
+  final int questionNumber;
+  final int totalQuestions;
+  final int selected;
+  final ValueChanged<int> onSelect;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.sizeOf(context).width <= 720;
-    final showFeedback = _selected != -1;
-    final isCorrect = _selected == 0;
+    final showFeedback = selected != -1;
+    final isCorrect = selected == question.correctIndex;
 
     return Container(
       padding: EdgeInsets.all(isMobile ? 22 : 28),
@@ -1205,20 +1291,34 @@ class _QuestionSectionState extends State<_QuestionSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Quick question',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.4,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-              color: accentColor,
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                const Text(
+                  'Quick question',
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    color: accentColor,
+                  ),
+                ),
+                Text(
+                  'Question $questionNumber of $totalQuestions',
+                  style: _smallStyle,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 10),
           Text(
-            'A hospital’s old server still works. Should it skip security '
-            'updates?',
+            question.prompt,
             style: TextStyle(
               fontSize: isMobile ? 20 : 23,
               height: 1.4,
@@ -1231,57 +1331,85 @@ class _QuestionSectionState extends State<_QuestionSection> {
           if (isMobile)
             Column(
               children: [
-                _buildChoice('No — always patch', 0),
-                const SizedBox(height: 10),
-                _buildChoice('Yes — if it still works', 1),
+                for (var i = 0; i < question.choices.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 10),
+                  _buildChoice(question.choices[i], i),
+                ],
               ],
             )
           else
-            Row(
-              children: [
-                Expanded(child: _buildChoice('No — always patch', 0)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildChoice('Yes — if it still works', 1)),
-              ],
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < question.choices.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 12),
+                    Expanded(child: _buildChoice(question.choices[i], i)),
+                  ],
+                ],
+              ),
             ),
           if (showFeedback) ...[
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isCorrect ? accentSurface : warningSurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isCorrect ? accentLine : warningLine),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    isCorrect
-                        ? Icons.check_circle_outline_rounded
-                        : Icons.info_outline_rounded,
-                    size: 18,
-                    color: isCorrect ? accentColor : warningColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      isCorrect
-                          ? 'That’s right. Working is not the same as secure. '
-                                'Patch it, test with sample claims, and keep a '
-                                'rollback plan.'
-                          : 'Not quite. Legacy systems are a favourite target. '
-                                'Updates still matter even when the hardware '
-                                'keeps running.',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.6,
-                        color: textPrimary,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isCorrect ? accentSurface : warningSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isCorrect ? accentLine : warningLine,
                       ),
                     ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          isCorrect
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.info_outline_rounded,
+                          size: 18,
+                          color: isCorrect ? accentColor : warningColor,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isCorrect
+                                ? question.correctFeedback
+                                : question.incorrectFeedback,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.6,
+                              color: textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: IconButton(
+                    onPressed: onNext,
+                    tooltip: 'Next question',
+                    style: IconButton.styleFrom(
+                      backgroundColor: accentColor,
+                      foregroundColor: accentInk,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -1290,17 +1418,17 @@ class _QuestionSectionState extends State<_QuestionSection> {
   }
 
   Widget _buildChoice(String label, int value) {
-    final selected = _selected == value;
-    final isCorrect = value == 0;
+    final isSelected = selected == value;
+    final isCorrect = value == question.correctIndex;
     final selectedColor = isCorrect ? accentColor : warningColor;
 
     return Material(
-      color: selected
+      color: isSelected
           ? (isCorrect ? accentSurface : warningSurface)
           : Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: () => setState(() => _selected = value),
+        onTap: () => onSelect(value),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
@@ -1308,8 +1436,8 @@ class _QuestionSectionState extends State<_QuestionSection> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected ? selectedColor : lineStrongColor,
-              width: selected ? 1.4 : 1,
+              color: isSelected ? selectedColor : lineStrongColor,
+              width: isSelected ? 1.4 : 1,
             ),
           ),
           child: Row(
@@ -1320,11 +1448,11 @@ class _QuestionSectionState extends State<_QuestionSection> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: selected ? selectedColor : textDim,
+                    color: isSelected ? selectedColor : textDim,
                     width: 1.5,
                   ),
                 ),
-                child: selected
+                child: isSelected
                     ? Center(
                         child: Container(
                           width: 8,
@@ -1344,8 +1472,8 @@ class _QuestionSectionState extends State<_QuestionSection> {
                   style: TextStyle(
                     fontSize: 14.5,
                     height: 1.4,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                    color: selected ? textPrimary : textSecondary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? textPrimary : textSecondary,
                   ),
                 ),
               ),

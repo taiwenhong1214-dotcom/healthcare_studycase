@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:healthcare_studycase/main.dart';
@@ -33,7 +35,9 @@ void main() {
     expect(find.text('Quick question'), findsOneWidget);
   });
 
-  testWidgets('quick question gives immediate feedback', (tester) async {
+  testWidgets('quick question gives immediate feedback and advances via arrow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 1800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -41,12 +45,87 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('No — always patch'));
+    expect(find.text('Question 1 of 2'), findsOneWidget);
+    expect(find.byTooltip('Next question'), findsNothing);
+
+    final startsWithServer = find.text('No — always patch').evaluate().isNotEmpty;
+    final firstCorrect = startsWithServer
+        ? 'No — always patch'
+        : 'B. No, at least require an additional PIN or biometric scan!';
+    final secondIncorrect = startsWithServer
+        ? 'A. Yes, another day, another dollar!'
+        : 'Yes — if it still works';
+
+    await tester.ensureVisible(find.text(firstCorrect));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('No — always patch'));
+    await tester.tap(find.text(firstCorrect));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('That’s right'), findsOneWidget);
+    expect(find.byTooltip('Next question'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Next question'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Question 2 of 2'), findsOneWidget);
+    expect(find.text(firstCorrect), findsNothing);
+    expect(find.byTooltip('Next question'), findsNothing);
+
+    final secondCorrect = startsWithServer
+        ? 'B. No, at least require an additional PIN or biometric scan!'
+        : 'No — always patch';
+
+    await tester.ensureVisible(find.text(secondIncorrect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(secondIncorrect));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Not quite'), findsOneWidget);
+    expect(find.byTooltip('Next question'), findsOneWidget);
+
+    await tester.tap(find.text(secondCorrect));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('That’s right'), findsOneWidget);
+    expect(find.byTooltip('Next question'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Next question'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Question 1 of 2'), findsOneWidget);
+    expect(find.text(firstCorrect), findsOneWidget);
+  });
+
+  testWidgets('quick questions shuffle order across app launches', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    var sawServerFirst = false;
+    var sawPortalFirst = false;
+
+    for (var seed = 0; seed < 12; seed++) {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(MyApp(questionRandom: math.Random(seed)));
+      await tester.pumpAndSettle();
+
+      if (find.text('No — always patch').evaluate().isNotEmpty) {
+        sawServerFirst = true;
+      }
+      if (find
+          .text('B. No, at least require an additional PIN or biometric scan!')
+          .evaluate()
+          .isNotEmpty) {
+        sawPortalFirst = true;
+      }
+      if (sawServerFirst && sawPortalFirst) break;
+    }
+
+    expect(sawServerFirst, isTrue);
+    expect(sawPortalFirst, isTrue);
   });
 
   testWidgets('desktop navigation opens a lesson', (tester) async {
