@@ -420,6 +420,10 @@
         background: #9ae7ce;
       }
 
+      .next-question-label {
+        display: none;
+      }
+
       .feedback.incorrect {
         border-color: var(--warning-line);
         background: var(--warning-surface);
@@ -1120,7 +1124,22 @@
         .hero-gif { width: 180px; height: 180px; }
         .hero h1 { font-size: 34px; }
         .lesson-row { padding: 16px; }
-        .question { padding: 22px; }
+        .question { padding: 18px; border-radius: 16px; }
+        .question h2 { margin: 8px 0 14px; font-size: 18px; }
+        .choices { gap: 8px; }
+        .choice { padding: 11px 14px; gap: 10px; font-size: 14px; }
+        .feedback-row { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 12px; }
+        .feedback { padding: 14px; }
+        .feedback-text { font-size: 13.5px; line-height: 1.55; }
+        .next-question {
+          display: inline-flex; align-self: flex-end; align-items: center; gap: 6px;
+          width: auto; height: 40px; padding: 0 14px; border-radius: 10px;
+          border: 1px solid var(--accent-line); background: var(--accent-surface); color: var(--accent);
+          font: inherit; font-size: 13.5px; font-weight: 600;
+        }
+        .next-question:hover { background: var(--accent-surface); border-color: var(--accent); }
+        .next-question svg { width: 18px; height: 18px; }
+        .next-question-label { display: inline; }
       }
       /* A separate action row keeps the primary action aligned at every size. */
       .hero { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 28px 40px; }
@@ -1231,6 +1250,7 @@
               aria-label="Next question"
               title="Next question"
             >
+              <span class="next-question-label">Next question</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>

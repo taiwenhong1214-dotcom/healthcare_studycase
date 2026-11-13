@@ -64,6 +64,15 @@ void main() {
     expect(find.textContaining('That’s right'), findsOneWidget);
     expect(find.byTooltip('Next question'), findsOneWidget);
 
+    // On phones the next button sits below the feedback instead of beside it,
+    // so the feedback text keeps the full card width.
+    final feedbackRect = tester.getRect(find.textContaining('That’s right'));
+    final nextRect = tester.getRect(find.byTooltip('Next question'));
+    expect(nextRect.top, greaterThanOrEqualTo(feedbackRect.bottom));
+    expect(find.text('Next question'), findsOneWidget);
+
+    await tester.ensureVisible(find.byTooltip('Next question'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Next question'));
     await tester.pumpAndSettle();
 
@@ -89,6 +98,8 @@ void main() {
     expect(find.textContaining('That’s right'), findsOneWidget);
     expect(find.byTooltip('Next question'), findsOneWidget);
 
+    await tester.ensureVisible(find.byTooltip('Next question'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Next question'));
     await tester.pumpAndSettle();
 

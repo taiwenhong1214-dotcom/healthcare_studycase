@@ -1282,10 +1282,10 @@ class _QuestionSection extends StatelessWidget {
     final isCorrect = selected == question.correctIndex;
 
     return Container(
-      padding: EdgeInsets.all(isMobile ? 22 : 28),
+      padding: EdgeInsets.all(isMobile ? 18 : 28),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 18),
         border: Border.all(color: lineColor),
       ),
       child: Column(
@@ -1316,24 +1316,24 @@ class _QuestionSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: isMobile ? 8 : 10),
           Text(
             question.prompt,
             style: TextStyle(
-              fontSize: isMobile ? 20 : 23,
+              fontSize: isMobile ? 18 : 23,
               height: 1.4,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,
               color: textPrimary,
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: isMobile ? 14 : 18),
           if (isMobile)
             Column(
               children: [
                 for (var i = 0; i < question.choices.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 10),
-                  _buildChoice(question.choices[i], i),
+                  if (i > 0) const SizedBox(height: 8),
+                  _buildChoice(question.choices[i], i, isMobile),
                 ],
               ],
             )
@@ -1344,80 +1344,114 @@ class _QuestionSection extends StatelessWidget {
                 children: [
                   for (var i = 0; i < question.choices.length; i++) ...[
                     if (i > 0) const SizedBox(width: 12),
-                    Expanded(child: _buildChoice(question.choices[i], i)),
+                    Expanded(
+                      child: _buildChoice(question.choices[i], i, isMobile),
+                    ),
                   ],
                 ],
               ),
             ),
           if (showFeedback) ...[
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isCorrect ? accentSurface : warningSurface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isCorrect ? accentLine : warningLine,
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          isCorrect
-                              ? Icons.check_circle_outline_rounded
-                              : Icons.info_outline_rounded,
-                          size: 18,
-                          color: isCorrect ? accentColor : warningColor,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            isCorrect
-                                ? question.correctFeedback
-                                : question.incorrectFeedback,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              height: 1.6,
-                              color: textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: IconButton(
+            SizedBox(height: isMobile ? 12 : 16),
+            if (isMobile) ...[
+              _buildFeedback(isCorrect, isMobile),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Tooltip(
+                  message: 'Next question',
+                  child: TextButton.icon(
                     onPressed: onNext,
-                    tooltip: 'Next question',
-                    style: IconButton.styleFrom(
-                      backgroundColor: accentColor,
-                      foregroundColor: accentInk,
-                      padding: EdgeInsets.zero,
+                    iconAlignment: IconAlignment.end,
+                    style: TextButton.styleFrom(
+                      foregroundColor: accentColor,
+                      backgroundColor: accentSurface,
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(color: accentLine),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                    label: const Text('Next question'),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ] else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: _buildFeedback(isCorrect, isMobile)),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: IconButton(
+                      onPressed: onNext,
+                      tooltip: 'Next question',
+                      style: IconButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: accentInk,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildChoice(String label, int value) {
+  Widget _buildFeedback(bool isCorrect, bool isMobile) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 14 : 16),
+      decoration: BoxDecoration(
+        color: isCorrect ? accentSurface : warningSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isCorrect ? accentLine : warningLine),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(
+              isCorrect
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.info_outline_rounded,
+              size: 18,
+              color: isCorrect ? accentColor : warningColor,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              isCorrect ? question.correctFeedback : question.incorrectFeedback,
+              style: TextStyle(
+                fontSize: isMobile ? 13.5 : 14,
+                height: 1.55,
+                color: textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChoice(String label, int value, bool isMobile) {
     final isSelected = selected == value;
     final isCorrect = value == question.correctIndex;
     final selectedColor = isCorrect ? accentColor : warningColor;
@@ -1432,7 +1466,10 @@ class _QuestionSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 14 : 16,
+            vertical: isMobile ? 11 : 13,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
@@ -1470,7 +1507,7 @@ class _QuestionSection extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14.5,
+                    fontSize: isMobile ? 14 : 14.5,
                     height: 1.4,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? textPrimary : textSecondary,
